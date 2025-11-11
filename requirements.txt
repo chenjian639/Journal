@@ -1,0 +1,14 @@
+# 数据处理 
+pandas
+numpy
+scipy
+ 
+# 文本处理与NLP 
+scikit-learn
+nltk
+gensim
+ 
+# 可视化 
+matplotlib
+seaborn
+plotly
