@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分析功能 - 期刊分析系统</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+        }
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        }
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 50px 0;
+            margin-bottom: 40px;
+        }
+        .analysis-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            height: 100%;
+        }
+        .analysis-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        .analysis-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        .icon-single { color: #3498db; }
+        .icon-compare { color: #e74c3c; }
+        .icon-report { color: #27ae60; }
+        footer {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 30px 0;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/}">
+                <i class="fas fa-book-open me-2"></i>期刊分析系统
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/}">首页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/journals}">期刊库</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" th:href="@{/analysis}">分析功能</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item" th:if="${!isLoggedIn}">
+                        <a class="nav-link" th:href="@{/login}">登录</a>
+                    </li>
+                    <li class="nav-item dropdown" th:if="${isLoggedIn}">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                            <span th:text="${username}">用户</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" th:href="@{/logout}">退出登录</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 页面头部 -->
+    <section class="page-header text-center">
+        <div class="container">
+            <h1><i class="fas fa-chart-bar me-2"></i>期刊分析功能</h1>
+            <p class="lead mb-0">深度分析期刊内容，助力学术研究决策</p>
+        </div>
+    </section>
+
+    <!-- 主要内容 -->
+    <div class="container">
+        <div class="row g-4">
+            <!-- 单期刊分析 -->
+            <div class="col-md-4">
+                <div class="card analysis-card text-center p-5">
+                    <div class="analysis-icon icon-single">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h4>单期刊分析</h4>
+                    <p class="text-muted">对单个期刊进行深度分析，包括发文趋势、研究热点、作者分布等</p>
+                    <ul class="list-unstyled text-start text-muted small mb-4">
+                        <li><i class="fas fa-check text-success me-2"></i>发文量趋势分析</li>
+                        <li><i class="fas fa-check text-success me-2"></i>热点关键词挖掘</li>
+                        <li><i class="fas fa-check text-success me-2"></i>高产作者统计</li>
+                        <li><i class="fas fa-check text-success me-2"></i>引用分析</li>
+                    </ul>
+                    <a th:href="@{/analysis/single}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-arrow-right me-1"></i>开始分析
+                    </a>
+                </div>
+            </div>
+            
+            <!-- 期刊比较 -->
+            <div class="col-md-4">
+                <div class="card analysis-card text-center p-5">
+                    <div class="analysis-icon icon-compare">
+                        <i class="fas fa-balance-scale"></i>
+                    </div>
+                    <h4>期刊比较</h4>
+                    <p class="text-muted">多期刊横向对比分析，全面了解不同期刊的优势与差异</p>
+                    <ul class="list-unstyled text-start text-muted small mb-4">
+                        <li><i class="fas fa-check text-success me-2"></i>影响因子对比</li>
+                        <li><i class="fas fa-check text-success me-2"></i>发文量对比</li>
+                        <li><i class="fas fa-check text-success me-2"></i>研究主题对比</li>
+                        <li><i class="fas fa-check text-success me-2"></i>国际化程度对比</li>
+                    </ul>
+                    <a th:href="@{/analysis/compare}" class="btn btn-danger btn-lg">
+                        <i class="fas fa-arrow-right me-1"></i>开始比较
+                    </a>
+                </div>
+            </div>
+            
+            <!-- 分析报告 -->
+            <div class="col-md-4">
+                <div class="card analysis-card text-center p-5">
+                    <div class="analysis-icon icon-report">
+                        <i class="fas fa-file-alt"></i>
+                    </div>
+                    <h4>分析报告</h4>
+                    <p class="text-muted">查看和管理您的分析报告，支持导出和分享</p>
+                    <ul class="list-unstyled text-start text-muted small mb-4">
+                        <li><i class="fas fa-check text-success me-2"></i>历史报告查看</li>
+                        <li><i class="fas fa-check text-success me-2"></i>报告导出</li>
+                        <li><i class="fas fa-check text-success me-2"></i>报告管理</li>
+                        <li><i class="fas fa-check text-success me-2"></i>数据可视化</li>
+                    </ul>
+                    <a th:href="@{/analysis/reports}" class="btn btn-success btn-lg">
+                        <i class="fas fa-arrow-right me-1"></i>查看报告
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 功能说明 -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-4">
+                        <h5 class="mb-3"><i class="fas fa-info-circle me-2 text-primary"></i>功能说明</h5>
+                        <p class="text-muted mb-0">
+                            期刊分析系统提供全面的期刊内容分析功能，帮助研究人员了解期刊的研究方向、发展趋势和学术影响力。
+                            您可以选择单个期刊进行深度分析，也可以选择多个期刊进行横向比较。所有分析结果都可以保存为报告，
+                            方便后续查看和参考。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer>
+        <div class="container text-center">
+            <p class="mb-0">期刊分析系统 - Journal Analysis System</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

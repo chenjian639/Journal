@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>单期刊分析 - 期刊分析系统</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+        }
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        }
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 40px 0;
+            margin-bottom: 30px;
+        }
+        .analysis-panel {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .result-card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .todo-badge {
+            background: linear-gradient(135deg, #f39c12, #e74c3c);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+        }
+        footer {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 30px 0;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/}">
+                <i class="fas fa-book-open me-2"></i>期刊分析系统
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/}">首页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/journals}">期刊库</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" th:href="@{/analysis}">分析功能</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 页面头部 -->
+    <section class="page-header">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a th:href="@{/}" class="text-white-50">首页</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/analysis}" class="text-white-50">分析功能</a></li>
+                    <li class="breadcrumb-item active text-white">单期刊分析</li>
+                </ol>
+            </nav>
+            <h1><i class="fas fa-chart-line me-2"></i>单期刊分析</h1>
+            <p class="mb-0">对单个期刊进行深度内容分析</p>
+        </div>
+    </section>
+
+    <!-- 主要内容 -->
+    <div class="container">
+        <div class="row">
+            <!-- 左侧选择面板 -->
+            <div class="col-md-4">
+                <div class="card analysis-panel">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0"><i class="fas fa-search me-2"></i>选择期刊</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="analysisForm">
+                            <div class="mb-3">
+                                <label class="form-label">选择要分析的期刊</label>
+                                <select class="form-select" name="journalId" id="journalSelect" required>
+                                    <option value="">请选择期刊</option>
+                                    <option th:each="j : ${journals}" th:value="${j.id}" th:text="${j.name}">期刊名</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">分析维度</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="trend" id="trend" checked>
+                                    <label class="form-check-label" for="trend">发文趋势分析</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="keyword" id="keyword" checked>
+                                    <label class="form-check-label" for="keyword">热点关键词</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="author" id="author" checked>
+                                    <label class="form-check-label" for="author">作者分布</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="citation" id="citation" checked>
+                                    <label class="form-check-label" for="citation">引用分析</label>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-play me-1"></i>开始分析
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 右侧结果面板 -->
+            <div class="col-md-8">
+                <div class="card analysis-panel">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>分析结果</h5>
+                        <span class="todo-badge">TODO: 待实现</span>
+                    </div>
+                    <div class="card-body">
+                        <div id="resultContainer">
+                            <div class="text-center py-5">
+                                <i class="fas fa-chart-pie fa-4x text-muted mb-3"></i>
+                                <h5 class="text-muted">请选择期刊并点击"开始分析"</h5>
+                                <p class="text-muted small">分析结果将在此处显示</p>
+                            </div>
+                        </div>
+                        
+                        <!-- 示例结果区域（静态展示） -->
+                        <div id="sampleResults" style="display: none;">
+                            <!-- 发文趋势 -->
+                            <div class="result-card">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0"><i class="fas fa-chart-line me-2"></i>发文趋势分析</h6>
+                                </div>
+                                <div class="card-body text-center text-muted py-4">
+                                    <i class="fas fa-tools fa-2x mb-2"></i>
+                                    <p class="mb-0">TODO: 实现发文趋势图表</p>
+                                </div>
+                            </div>
+                            
+                            <!-- 热点关键词 -->
+                            <div class="result-card">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0"><i class="fas fa-tags me-2"></i>热点关键词</h6>
+                                </div>
+                                <div class="card-body text-center text-muted py-4">
+                                    <i class="fas fa-tools fa-2x mb-2"></i>
+                                    <p class="mb-0">TODO: 实现关键词词云</p>
+                                </div>
+                            </div>
+                            
+                            <!-- 作者分布 -->
+                            <div class="result-card">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0"><i class="fas fa-users me-2"></i>高产作者</h6>
+                                </div>
+                                <div class="card-body text-center text-muted py-4">
+                                    <i class="fas fa-tools fa-2x mb-2"></i>
+                                    <p class="mb-0">TODO: 实现作者排名统计</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer>
+        <div class="container text-center">
+            <p class="mb-0">期刊分析系统 - Journal Analysis System</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('analysisForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var journalId = document.getElementById('journalSelect').value;
+            if (!journalId) {
+                alert('请选择要分析的期刊');
+                return;
+            }
+            
+            // 显示示例结果（实际应调用后端API）
+            document.getElementById('resultContainer').innerHTML = 
+                '<div class="alert alert-info"><i class="fas fa-info-circle me-2"></i>' +
+                '分析功能正在开发中，以下为示例展示...</div>';
+            document.getElementById('sampleResults').style.display = 'block';
+            
+            // TODO: 调用后端API获取真实分析结果
+            // fetch('/analysis/single', { method: 'POST', body: ... })
+        });
+    </script>
+</body>
+</html>
