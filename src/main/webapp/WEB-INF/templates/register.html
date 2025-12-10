@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户注册 - 期刊分析系统</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        .register-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        .register-header {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            padding: 30px;
+            text-align: center;
+        }
+        .register-body {
+            padding: 40px;
+        }
+        .form-control {
+            border-radius: 10px;
+            padding: 12px 15px;
+        }
+        .btn-register {
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card register-card">
+                    <div class="register-header">
+                        <h2><i class="fas fa-book-open me-2"></i>期刊分析系统</h2>
+                        <p class="mb-0">用户注册</p>
+                    </div>
+                    <div class="register-body">
+                        <!-- 错误消息 -->
+                        <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
+                        
+                        <form th:action="@{/register}" method="post">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">用户名 <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                        <input type="text" class="form-control" name="username" 
+                                               th:value="${username}" placeholder="请输入用户名" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">真实姓名</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                                        <input type="text" class="form-control" name="realName" 
+                                               th:value="${realName}" placeholder="请输入真实姓名">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">邮箱</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                    <input type="email" class="form-control" name="email" 
+                                           th:value="${email}" placeholder="请输入邮箱">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">密码 <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                    <input type="password" class="form-control" name="password" 
+                                           placeholder="请输入密码" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">确认密码 <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                    <input type="password" class="form-control" name="confirmPassword" 
+                                           placeholder="请再次输入密码" required>
+                                </div>
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="agree" required>
+                                <label class="form-check-label" for="agree">
+                                    我已阅读并同意<a href="#">用户协议</a>
+                                </label>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-register w-100">
+                                <i class="fas fa-user-plus me-2"></i>立即注册
+                            </button>
+                        </form>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="text-center">
+                            <p class="mb-0">已有账号？<a th:href="@{/login}">立即登录</a></p>
+                        </div>
+                        
+                        <div class="text-center mt-3">
+                            <a th:href="@{/}" class="text-muted">
+                                <i class="fas fa-arrow-left me-1"></i>返回首页
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

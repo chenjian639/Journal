@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>报告详情 - 期刊分析系统</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+        }
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        }
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 40px 0;
+            margin-bottom: 30px;
+        }
+        .report-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        footer {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 30px 0;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/}">
+                <i class="fas fa-book-open me-2"></i>期刊分析系统
+            </a>
+        </div>
+    </nav>
+
+    <!-- 页面头部 -->
+    <section class="page-header">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a th:href="@{/}" class="text-white-50">首页</a></li>
+                    <li class="breadcrumb-item"><a th:href="@{/analysis/reports}" class="text-white-50">分析报告</a></li>
+                    <li class="breadcrumb-item active text-white">报告详情</li>
+                </ol>
+            </nav>
+            <h1 th:text="${report.title}">报告标题</h1>
+            <p class="mb-0">
+                <span class="badge bg-light text-dark me-2" 
+                      th:text="${report.reportType == 'SINGLE'} ? '单期刊分析' : '期刊比较'">类型</span>
+                <span th:text="'创建时间：' + ${#temporals.format(report.createTime, 'yyyy-MM-dd HH:mm')}">时间</span>
+            </p>
+        </div>
+    </section>
+
+    <!-- 主要内容 -->
+    <div class="container">
+        <div class="card report-card">
+            <div class="card-body p-4">
+                <div class="text-center py-5">
+                    <i class="fas fa-file-alt fa-4x text-muted mb-3"></i>
+                    <h5 class="text-muted">报告内容展示功能开发中...</h5>
+                    <p class="text-muted">TODO: 实现报告内容的可视化展示</p>
+                </div>
+                
+                <!-- 报告原始内容（JSON） -->
+                <div class="mt-4" th:if="${report.content}">
+                    <h6>报告数据（原始）：</h6>
+                    <pre class="bg-light p-3 rounded" th:text="${report.content}">报告内容</pre>
+                </div>
+            </div>
+            <div class="card-footer bg-white">
+                <a th:href="@{/analysis/reports}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>返回列表
+                </a>
+                <button class="btn btn-primary float-end" onclick="alert('导出功能待实现')">
+                    <i class="fas fa-download me-1"></i>导出报告
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer>
+        <div class="container text-center">
+            <p class="mb-0">期刊分析系统 - Journal Analysis System</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

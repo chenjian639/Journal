@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户登录 - 期刊分析系统</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        .login-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        .login-header {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            padding: 30px;
+            text-align: center;
+        }
+        .login-body {
+            padding: 40px;
+        }
+        .form-control {
+            border-radius: 10px;
+            padding: 12px 15px;
+        }
+        .btn-login {
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-5">
+                <div class="card login-card">
+                    <div class="login-header">
+                        <h2><i class="fas fa-book-open me-2"></i>期刊分析系统</h2>
+                        <p class="mb-0">用户登录</p>
+                    </div>
+                    <div class="login-body">
+                        <!-- 成功消息 -->
+                        <div class="alert alert-success" th:if="${success}" th:text="${success}"></div>
+                        
+                        <!-- 错误消息 -->
+                        <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
+                        
+                        <form th:action="@{/login}" method="post">
+                            <div class="mb-3">
+                                <label class="form-label">用户名</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                    <input type="text" class="form-control" name="username" 
+                                           th:value="${username}" placeholder="请输入用户名" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">密码</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                    <input type="password" class="form-control" name="password" 
+                                           placeholder="请输入密码" required>
+                                </div>
+                            </div>
+                            <div class="mb-3 form-check">
+                                <input type="checkbox" class="form-check-input" id="remember">
+                                <label class="form-check-label" for="remember">记住我</label>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-login w-100">
+                                <i class="fas fa-sign-in-alt me-2"></i>登录
+                            </button>
+                        </form>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="text-center">
+                            <p class="mb-0">还没有账号？<a th:href="@{/register}">立即注册</a></p>
+                        </div>
+                        
+                        <div class="text-center mt-3">
+                            <a th:href="@{/}" class="text-muted">
+                                <i class="fas fa-arrow-left me-1"></i>返回首页
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

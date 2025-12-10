@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>期刊列表 - 期刊分析系统</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+        }
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .navbar {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        }
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 40px 0;
+            margin-bottom: 30px;
+        }
+        .journal-card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin-bottom: 20px;
+        }
+        .journal-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        .impact-badge {
+            background: linear-gradient(135deg, #f39c12, #e74c3c);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        .country-badge {
+            background-color: #3498db;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+        }
+        .filter-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        footer {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 30px 0;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/}">
+                <i class="fas fa-book-open me-2"></i>期刊分析系统
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/}">首页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" th:href="@{/journals}">期刊库</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">分析功能</a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" th:href="@{/analysis/single}">单期刊分析</a></li>
+                            <li><a class="dropdown-item" th:href="@{/analysis/compare}">期刊比较</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" th:href="@{/analysis/reports}">分析报告</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item" th:if="${!isLoggedIn}">
+                        <a class="nav-link" th:href="@{/login}">登录</a>
+                    </li>
+                    <li class="nav-item dropdown" th:if="${isLoggedIn}">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                            <i class="fas fa-user me-1"></i><span th:text="${username}">用户</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" th:href="@{/logout}">退出登录</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 页面头部 -->
+    <section class="page-header">
+        <div class="container">
+            <h1><i class="fas fa-database me-2"></i>期刊数据库</h1>
+            <p class="mb-0">共收录 <strong th:text="${totalCount}">0</strong> 种学术期刊</p>
+        </div>
+    </section>
+
+    <!-- 主要内容 -->
+    <div class="container">
+        <div class="row">
+            <!-- 左侧筛选 -->
+            <div class="col-md-3">
+                <div class="filter-card">
+                    <h5 class="mb-3"><i class="fas fa-filter me-2"></i>筛选条件</h5>
+                    <form th:action="@{/journals}" method="get">
+                        <div class="mb-3">
+                            <label class="form-label">关键词</label>
+                            <input type="text" class="form-control" name="keyword" 
+                                   th:value="${keyword}" placeholder="期刊名称/ISSN/出版商">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">国家/地区</label>
+                            <select class="form-select" name="country">
+                                <option value="">全部</option>
+                                <option value="中国" th:selected="${country == '中国'}">中国</option>
+                                <option value="美国" th:selected="${country == '美国'}">美国</option>
+                                <option value="英国" th:selected="${country == '英国'}">英国</option>
+                                <option value="德国" th:selected="${country == '德国'}">德国</option>
+                                <option value="日本" th:selected="${country == '日本'}">日本</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">学科分类</label>
+                            <select class="form-select" name="category">
+                                <option value="">全部</option>
+                                <option value="计算机科学" th:selected="${category == '计算机科学'}">计算机科学</option>
+                                <option value="医学" th:selected="${category == '医学'}">医学</option>
+                                <option value="物理学" th:selected="${category == '物理学'}">物理学</option>
+                                <option value="化学" th:selected="${category == '化学'}">化学</option>
+                                <option value="生物学" th:selected="${category == '生物学'}">生物学</option>
+                                <option value="经济学" th:selected="${category == '经济学'}">经济学</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search me-1"></i>搜索
+                        </button>
+                        <a th:href="@{/journals}" class="btn btn-outline-secondary w-100 mt-2">重置</a>
+                    </form>
+                </div>
+                
+                <!-- 添加期刊按钮 -->
+                <div class="d-grid" th:if="${isLoggedIn}">
+                    <a th:href="@{/journal/add}" class="btn btn-success">
+                        <i class="fas fa-plus me-1"></i>添加期刊
+                    </a>
+                </div>
+            </div>
+            
+            <!-- 右侧期刊列表 -->
+            <div class="col-md-9">
+                <div th:if="${#lists.isEmpty(journals)}" class="text-center py-5">
+                    <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+                    <h4 class="text-muted">暂无期刊数据</h4>
+                    <p class="text-muted">尝试调整筛选条件或添加新的期刊</p>
+                </div>
+                
+                <div th:each="journal : ${journals}" class="card journal-card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-9">
+                                <h5 class="card-title">
+                                    <a th:href="@{/journal/{id}(id=${journal.id})}" 
+                                       class="text-decoration-none text-dark"
+                                       th:text="${journal.name}">期刊名称</a>
+                                </h5>
+                                <p class="text-muted mb-2">
+                                    <span class="me-3"><i class="fas fa-barcode me-1"></i>ISSN: <span th:text="${journal.issn}">-</span></span>
+                                    <span class="me-3"><i class="fas fa-building me-1"></i><span th:text="${journal.publisher}">-</span></span>
+                                </p>
+                                <p class="mb-2">
+                                    <span class="country-badge me-2" th:text="${journal.country}">国家</span>
+                                    <span class="badge bg-secondary" th:text="${journal.category}">分类</span>
+                                    <span class="badge bg-info" th:text="${journal.language}">语言</span>
+                                </p>
+                                <p class="card-text text-muted small mb-0" 
+                                   th:text="${#strings.abbreviate(journal.description, 150)}">期刊描述...</p>
+                            </div>
+                            <div class="col-md-3 text-end">
+                                <div th:if="${journal.impactFactor != null}" class="mb-3">
+                                    <span class="impact-badge">
+                                        IF: <span th:text="${#numbers.formatDecimal(journal.impactFactor, 1, 3)}">0.000</span>
+                                    </span>
+                                </div>
+                                <a th:href="@{/journal/{id}(id=${journal.id})}" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-eye me-1"></i>查看详情
+                                </a>
+                                <a th:if="${isAdmin}" th:href="@{/journal/edit/{id}(id=${journal.id})}" 
+                                   class="btn btn-outline-warning btn-sm mt-1">
+                                    <i class="fas fa-edit me-1"></i>编辑
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 分页 -->
+                <nav th:if="${totalPages > 1}" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item" th:classappend="${currentPage == 1} ? 'disabled'">
+                            <a class="page-link" th:href="@{/journals(page=${currentPage - 1})}">上一页</a>
+                        </li>
+                        <li th:each="page : ${#numbers.sequence(1, totalPages)}" class="page-item" 
+                            th:classappend="${page == currentPage} ? 'active'">
+                            <a class="page-link" th:href="@{/journals(page=${page})}" th:text="${page}">1</a>
+                        </li>
+                        <li class="page-item" th:classappend="${currentPage == totalPages} ? 'disabled'">
+                            <a class="page-link" th:href="@{/journals(page=${currentPage + 1})}">下一页</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer>
+        <div class="container text-center">
+            <p class="mb-0">期刊分析系统 - Journal Analysis System</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
