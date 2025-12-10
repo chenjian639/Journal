@@ -1,0 +1,123 @@
+{
+  "disrupt": {
+    "data_sources": {
+      "all_data": "data/cleaned/all_data.csv",
+      "target_data": "data/cleaned/target_data.csv"
+    },
+    "columns": {
+      "id": "DOI",
+      "journal": "Source Title",
+      "citing": "citing"
+    },
+    "output": {
+      "disrupt_dir": "outputs/disrupt",
+      "citation_network": "citation_network.json",
+      "original_ranking": "top10_original_ranking.csv",
+      "enhanced_ranking": "top10_enhanced_ranking.csv",
+      "journals_list": "top10_journals_list.txt"
+    },
+    "parameters": {
+      "top_k": 10,
+      "volume_weight": 0.4,
+      "visualize_top_n": 10
+    }
+  },
+
+  "novelty": {
+    "data_sources": {
+      "all_data": "data/cleaned/all_data.csv",
+      "target_data": "data/cleaned/target_data.csv"
+    },
+    "columns": {
+      "id": "DOI",
+      "journal": "Source Title",
+      "keywords": "Keywords",
+      "year": "Publication Year"
+    },
+    "output": {
+      "novelty_dir": "outputs/novelty"
+    },
+    "parameters": {
+      "stop_words": [
+        "review", "studies", "study", "analysis", "method", "methods",
+        "approach", "approaches", "framework", "model", "system",
+        "based", "using", "via", "case study", "research", "development"
+      ],
+      "novel_threshold_years": 1
+    }
+  },
+
+  "topic": {
+    "data_sources": {
+      "all_data": "data/cleaned/all_data.csv",
+      "target_data": "data/cleaned/target_data.csv"
+    },
+    "columns": {
+      "id": "DOI",
+      "journal": "Source Title",
+      "keywords": "Keywords"
+    },
+    "output": {
+      "topic_dir": "outputs/topic"
+    },
+    "parameters": {
+      "top_n": 10,
+      "term_source": "keywords"
+    }
+  },
+
+  "interdisciplinary": {
+    "data_sources": {
+      "all_data": "data/cleaned/all_data.csv",
+      "target_data": "data/cleaned/target_data.csv"
+    },
+    "columns": {
+      "id": "DOI",
+      "journal": "Source Title",
+      "category": "WoS Categories",
+      "refs": "citing"
+    },
+    "output": {
+      "interdisciplinary_dir": "outputs/interdisciplinary"
+    },
+    "parameters": {
+      "top_n": 10
+    }
+  },
+  "keywords": {
+    "data_sources": {
+      "target_data": "data/cleaned/target_data.csv"
+    },
+    "columns": {
+      "id": "DOI",
+      "journal": "Source Title",
+      "keywords": "Keywords",
+      "year": "Publication Year"
+    },
+    "output": {
+      "keywords_dir": "outputs/keywords"
+    },
+    "parameters": {
+      "min_papers": 5,
+      "top_n_keywords": 10,
+      "min_year_range": 3,
+      "analysis_years": "all"
+    }
+  },
+  "theme": {
+  "api_key": "Bearer cyjdtVYXSGWgwiUdnLMs:DvKIMQbkHgKlYljNcbhN",
+  "data_sources": {
+    "target_data": "data/cleaned/target_data.csv"
+  },
+  "columns": {
+    "journal": "Source Title",
+    "keywords": "Keywords"
+  },
+  "output": {
+    "theme_dir": "outputs/theme"
+  },
+  "parameters": {
+    "min_papers": 5
+  }
+}
+}

@@ -1,0 +1,37 @@
+# clean_config.yaml - 清洗专用配置
+
+# 数据源配置
+data_source:
+  type: "database"  # excel | database
+  excel_dir: "C:/Users/28623/Downloads/excel文件2"  # Excel文件路径
+  
+  # 数据库配置（当type为database时使用）
+  database:
+    dialect: "mysql"  # mysql | postgresql | sqlite
+    host: "39.106.90.206"
+    port: 3306
+    user: "PAPER_sys"
+    password: "ysW2LbdzHJiGyakG"
+    database: "paper_sys"
+    # 以下二选一：
+    table: "paper"  # 直接读取整表
+    # sql: "SELECT * FROM wos_data WHERE year >= 2020"  # 自定义SQL
+
+# 清洗规则
+cleaning:
+  drop_conference: true  # 是否去除会议论文
+  min_year: null  # 最小年份限制，null或空表示不限制
+  target_journals: []  # 指定目标期刊列表，空则自动取Top-N
+  top_n: 5 # 自动选取的期刊数量
+
+# 字段映射（原始列名 → 标准列名）
+field_mapping:
+  "DOI": ["DOI", "doi", "Digital Object Identifier"]
+  "Source Title": ["Source Title", "Journal", "Publication Title","journal"]
+  "Keywords": ["Keywords", "Author Keywords", "关键词","keywords"]
+  "Publication Year": ["Publication Year", "Year", "Publication Date","publish_date"]
+  "WoS Categories": ["WoS Categories", "Categories", "Research Areas","target"]
+  "Cited References": ["Cited References", "References", "Cited References","citations"]
+  "Article Title": ["Article Title", "Title", "Document Title","title"]
+  "Abstract": ["Abstract", "摘要", "abstract"]
+  "Affiliations": ["Affiliations", "Author Address", "Organization"]
