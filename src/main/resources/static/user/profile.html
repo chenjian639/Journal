@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人中心 - PaperMaster</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- 导航栏容器 -->
+    <div id="navbar-container"></div>
+
+    <div class="container">
+        <div class="profile-container">
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <h2 id="profileUsername">用户名</h2>
+                <p id="profileEmail" class="text-muted">邮箱地址</p>
+            </div>
+
+            <div class="profile-sections">
+                <!-- 基本信息 -->
+                <div class="profile-section">
+                    <h3><i class="fas fa-info-circle"></i> 基本信息</h3>
+                    <form id="profileForm">
+                        <div class="form-group">
+                            <label for="uname">用户名</label>
+                            <input type="text" id="uname" class="form-control" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">邮箱</label>
+                            <input type="email" id="email" class="form-control">
+                        </div>
+                        <button type="submit" class="btn btn-primary">保存修改</button>
+                    </form>
+                </div>
+
+                <!-- 修改密码 -->
+                <div class="profile-section">
+                    <h3><i class="fas fa-lock"></i> 修改密码</h3>
+                    <form id="passwordForm">
+                        <div class="form-group">
+                            <label for="oldPassword">当前密码</label>
+                            <input type="password" id="oldPassword" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newPassword">新密码</label>
+                            <input type="password" id="newPassword" class="form-control" required minlength="6">
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmNewPassword">确认新密码</label>
+                            <input type="password" id="confirmNewPassword" class="form-control" required minlength="6">
+                        </div>
+                        <button type="submit" class="btn btn-primary">修改密码</button>
+                    </form>
+                </div>
+
+                <!-- 快捷操作 -->
+                <div class="profile-section">
+                    <h3><i class="fas fa-bolt"></i> 快捷操作</h3>
+                    <div class="quick-actions">
+                        <a href="/analysis.html" class="quick-action-card">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>期刊分析</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/components.js"></script>
+    <script src="/js/profile.js"></script>
+    <script>
+        // 需要登录才能访问个人中心
+        requireLogin('/user/profile.html');
+    </script>
+</body>
+</html>

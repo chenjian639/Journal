@@ -1,0 +1,108 @@
+{
+  "disrupt": {
+    "data_sources": {
+      "all_data": "data/cleaned/all_data.csv",
+      "target_data": "data/cleaned/target_data.csv"
+    },
+    "columns": {
+      "id": "doi",
+      "journal": "journal",
+      "citing": "citing"
+    },
+    "output": {
+      "disrupt_dir": "outputs/disrupt",
+      "citation_network": "citation_network.json",
+      "original_ranking": "original_ranking.csv",
+      "enhanced_ranking": "enhanced_ranking.csv"
+    },
+    "parameters": {
+      "top_k": 10,
+      "volume_weight": 0.4,
+      "visualize_top_n": 10
+    }
+  },
+  "novelty": {
+    "data_sources": {
+      "all_data": "data/cleaned/all_data.csv",
+      "target_data": "data/cleaned/target_data.csv"
+    },
+    "columns": {
+      "id": "doi",
+      "journal": "journal",
+      "keywords": "keywords",
+      "year": "year"
+    },
+    "parameters": {
+      "novel_threshold_years": 1
+    },
+    "output": {
+      "novelty_dir": "outputs/novelty"
+    }
+  },
+  "topic": {
+    "data_sources": {
+      "target_data": "data/cleaned/target_data.csv"
+    },
+    "columns": {
+      "id": "doi",
+      "journal": "journal",
+      "keywords": "keywords",
+      "abstract": "abstract"
+    },
+    "parameters": {
+      "term_source": "keywords",
+      "//可改":"keywords/abstract/both"
+    },
+    "output": {
+      "topic_dir": "outputs/topic"
+    }
+  },
+  "interdisciplinary": {
+    "data_sources": {
+      "all_data": "data/cleaned/all_data.csv",
+      "target_data": "data/cleaned/target_data.csv"
+    },
+    "columns": {
+      "id": "doi",
+      "journal": "journal",
+      "category": "target",
+      "refs": "citing"
+    },
+    "output": {
+      "interdisciplinary_dir": "outputs/interdisciplinary"
+    }
+  },
+  "keywords": {
+    "data_sources": {
+      "target_data": "data/cleaned/target_data.csv"
+    },
+    "columns": {
+      "id": "doi",
+      "journal": "journal",
+      "keywords": "keywords",
+      "year": "publish_date"
+    },
+    "output": {
+      "keywords_dir": "outputs/keywords"
+    },
+    "parameters": {
+      "min_papers": 5,
+      "top_n_keywords": 10,
+      "min_year_range": 3,
+      "analysis_years": "all"
+    }
+  },
+  "theme": {
+    "data_sources": {
+      "target_data": "data/cleaned/target_data.csv"
+    },
+    "columns": {
+      "id": "doi",
+      "journal": "journal",
+      "keywords": "keywords"
+    },
+    "output": {
+      "theme_dir": "outputs/theme"
+    }
+  }
+}

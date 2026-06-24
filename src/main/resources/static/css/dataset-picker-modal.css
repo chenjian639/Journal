@@ -1,0 +1,153 @@
+/* Reusable dataset picker modal styles */
+
+.pm-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 16px;
+}
+
+.pm-modal {
+  width: min(760px, 100%);
+  max-height: min(80vh, 720px);
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.pm-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid #eee;
+}
+
+.pm-modal-title {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.pm-modal-close {
+  border: none;
+  background: transparent;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  color: #666;
+}
+
+.pm-modal-close:hover {
+  color: #111;
+}
+
+.pm-modal-body {
+  padding: 12px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  min-height: 0;
+}
+
+.pm-modal-search {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  outline: none;
+}
+
+.pm-modal-search:focus {
+  border-color: #5b8cff;
+  box-shadow: 0 0 0 3px rgba(91, 140, 255, 0.18);
+}
+
+.pm-modal-list {
+  overflow: auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  padding-right: 4px;
+  flex: 1;
+  min-height: 0;
+}
+
+.pm-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+}
+
+.pm-modal-pager-info {
+  flex: 1;
+  text-align: center;
+  font-size: 12px;
+  color: #666;
+}
+
+.pm-modal-pager-btn {
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+  color: #111;
+}
+
+.pm-modal-pager-btn:hover {
+  background: #f6f6f6;
+}
+
+.pm-modal-pager-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.pm-modal-item {
+  width: 100%;
+  text-align: left;
+  border: 1px solid #e9e9e9;
+  background: #fafafa;
+  border-radius: 12px;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+.pm-modal-item:hover {
+  background: #f3f7ff;
+  border-color: #d7e6ff;
+}
+
+.pm-modal-item.active {
+  border-color: #5b8cff;
+  background: #eef4ff;
+}
+
+.pm-modal-item-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: #111;
+  margin-bottom: 4px;
+}
+
+.pm-modal-item-meta {
+  font-size: 12px;
+  color: #666;
+}
+
+.pm-modal-empty {
+  padding: 10px 2px;
+  color: #666;
+  font-size: 13px;
+}

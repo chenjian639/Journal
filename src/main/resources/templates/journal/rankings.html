@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>期刊排名（JCR风格）</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+  <div id="navbar-container">
+    <nav class="navbar">
+      <a th:href="@{/}" class="navbar-brand">
+        <i class="fas fa-graduation-cap"></i>
+        PaperMaster
+      </a>
+      <div class="navbar-menu">
+        <a th:href="@{/}">首页</a>
+        <a th:href="@{/journal/rankings}">期刊排名</a>
+        <a th:href="@{/analysis.html}">期刊分析</a>
+        <a th:href="@{/auth/login.html}">登录</a>
+        <a th:href="@{/auth/register.html}" class="btn btn-primary">注册</a>
+      </div>
+    </nav>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <h1>期刊排名（JCR风格）</h1>
+      <div class="muted">
+        数据源：总数据集｜口径：每本期刊取其最新年份记录｜排序指标：<span th:text="${selectedMetric.label}">指标</span>
+      </div>
+    </header>
+
+    <div class="card">
+      <form class="toolbar" method="get" th:action="@{/journal/rankings}">
+        <div class="toolbar-left">
+          <input class="input" type="search" name="q" placeholder="搜索期刊名..." autocomplete="off" th:value="${q}" />
+        </div>
+
+        <div class="toolbar-right">
+          <select class="select" name="metric" title="排序指标">
+            <option th:each="m : ${metricOptions}"
+                    th:value="${m.id}"
+                    th:selected="${m.id == selectedMetric.id}"
+                    th:text="${m.label}">指标</option>
+          </select>
+
+          <select class="select" name="size" title="每页条数">
+            <option th:value="10" th:selected="${size == 10}">10/页</option>
+            <option th:value="20" th:selected="${size == 20}">20/页</option>
+            <option th:value="50" th:selected="${size == 50}">50/页</option>
+            <option th:value="100" th:selected="${size == 100}">100/页</option>
+          </select>
+
+          <button class="btn btn-primary" type="submit">刷新</button>
+          <a class="btn" th:href="@{/journal/survey}">个人期刊推荐</a>
+          <a class="btn" th:href="@{/journal/compare}">期刊对比</a>
+        </div>
+      </form>
+
+      <div class="muted" style="margin-bottom:10px;" th:text="${selectedMetric.description}">desc</div>
+
+      <div class="table-wrap">
+        <table class="table jcr-table">
+          <thead>
+          <tr>
+            <th style="width:70px;">排名</th>
+            <th style="width:60px;">分区</th>
+            <th>期刊</th>
+            <th style="width:120px;" th:if="${selectedMetric.id != 'paper_count'}" th:text="'分值（' + ${selectedMetric.label} + '）'">分值</th>
+            <th style="width:90px;">论文数</th>
+            <th style="width:90px;">新颖性</th>
+            <th style="width:90px;">颠覆性</th>
+            <th style="width:90px;">跨学科性</th>
+            <th style="width:90px;">主题多样性</th>
+            <th style="width:90px;">主题集中度</th>
+            <th style="width:90px;">热点响应度</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="r : ${rows}" th:class="${r.rank == 1 ? 'rank-1' : (r.rank == 2 ? 'rank-2' : (r.rank == 3 ? 'rank-3' : ''))}">
+            <td>
+              <span class="rank-badge" th:text="${r.rank}">1</span>
+            </td>
+            <td th:text="'Q' + ${r.quartile}">Q1</td>
+            <td>
+              <a th:href="@{/journal/{journal}(journal=${r.row.journal})}" th:text="${r.row.journal}">期刊名</a>
+            </td>
+            <td th:if="${selectedMetric.id != 'paper_count'}" th:text="${#numbers.formatDecimal(r.metricValue, 1, 2)}">0.00</td>
+            <td th:text="${r.row.paperCount ?: ''}">0</td>
+            <td th:text="${r.row.novelty != null ? #numbers.formatDecimal(r.row.novelty, 1, 2) : ''}">0</td>
+            <td th:text="${r.row.disruption != null ? #numbers.formatDecimal(r.row.disruption, 1, 2) : ''}">0</td>
+            <td th:text="${r.row.interdisciplinary != null ? #numbers.formatDecimal(r.row.interdisciplinary, 1, 2) : ''}">0</td>
+            <td th:text="${r.row.topic != null ? #numbers.formatDecimal(r.row.topic, 1, 2) : ''}">0</td>
+            <td th:text="${r.row.themeConcentration != null ? #numbers.formatDecimal(r.row.themeConcentration, 1, 2) : ''}">0</td>
+            <td th:text="${r.row.hotResponse != null ? #numbers.formatDecimal(r.row.hotResponse, 1, 2) : ''}">0</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="empty" th:if="${rows == null || rows.isEmpty()}">
+        没有查到任何期刊数据（journal_metrics 可能为空，或搜索条件过严）。
+      </div>
+
+      <div class="pager" th:if="${page != null && page.totalPages > 1}">
+        <div class="muted" th:text="'共 ' + ${page.totalElements} + ' 本期刊｜第 ' + (${page.number} + 1) + '/' + ${page.totalPages} + ' 页'">page</div>
+        <div class="pager-links">
+          <a class="btn" th:if="${page.hasPrevious()}"
+             th:href="@{/journal/rankings(metric=${selectedMetric.id},q=${q},page=${page.number - 1},size=${size})}">上一页</a>
+
+          <a class="btn btn-outline" th:each="p : ${#numbers.sequence(startPage, endPage)}"
+             th:classappend="${p == page.number} ? ' btn-primary' : ''"
+             th:href="@{/journal/rankings(metric=${selectedMetric.id},q=${q},page=${p},size=${size})}"
+             th:text="${p + 1}">1</a>
+
+          <a class="btn" th:if="${page.hasNext()}"
+             th:href="@{/journal/rankings(metric=${selectedMetric.id},q=${q},page=${page.number + 1},size=${size})}">下一页</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 选择框改动后自动提交，减少一次点击
+    document.addEventListener('change', (e) => {
+      const el = e.target;
+      if (!el) return;
+      if (el.matches('select[name="metric"], select[name="size"]')) {
+        el.form?.submit();
+      }
+    });
+  </script>
+  <script th:src="@{/js/components.js}"></script>
+</body>
+</html>

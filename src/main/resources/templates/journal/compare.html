@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>期刊对比</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script th:src="@{/js/components.js}"></script>
+</head>
+<body>
+  <!-- 导航栏容器 -->
+  <div id="navbar-container">
+    <nav class="navbar">
+      <a th:href="@{/}" class="navbar-brand">
+        <i class="fas fa-graduation-cap"></i>
+        PaperMaster
+      </a>
+      <div class="navbar-menu">
+        <a th:href="@{/}">首页</a>
+        <a th:href="@{/journal/rankings}">期刊排名</a>
+        <a th:href="@{/analysis.html}">期刊分析</a>
+        <a th:href="@{/auth/login.html}">登录</a>
+        <a th:href="@{/auth/register.html}" class="btn btn-primary">泩册</a>
+      </div>
+    </nav>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <div class="row">
+        <div>
+          <h1>期刊对比</h1>
+          <div class="muted">选择两本期刊对比（默认取各自最新年份指标）</div>
+        </div>
+        <div>
+          <a class="btn" th:href="@{/journal}">返回列表</a>
+        </div>
+      </div>
+    </header>
+
+    <section class="card">
+      <form class="compare-form" method="get" th:action="@{/journal/compare}">
+        <div class="field">
+          <div class="label">期刊 A</div>
+          <select class="select" name="j1" required>
+            <option value="" disabled th:selected="${j1 == null}">请选择</option>
+            <option th:each="j : ${journals}" th:value="${j}" th:text="${j}" th:selected="${j1 != null && j1.equals(j)}">journal</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="label">期刊 B</div>
+          <select class="select" name="j2" required>
+            <option value="" disabled th:selected="${j2 == null}">请选择</option>
+            <option th:each="j : ${journals}" th:value="${j}" th:text="${j}" th:selected="${j2 != null && j2.equals(j)}">journal</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="label">&nbsp;</div>
+          <button class="btn btn-primary" type="submit">开始对比</button>
+        </div>
+      </form>
+      <div class="muted">雷达图元素：内容前沿性=disruption+novelty；学科开放性=interdisciplinary；主题集中度=theme_concentration；主题多样性=topic；热点响应度=hot_response</div>
+    </section>
+
+    <div th:if="${aRow != null && bRow != null}">
+    <section class="card">
+      <h2>雷达图（叠加）</h2>
+      <div class="radar-wrap" style="--pm-chart-h:260px"><canvas id="radarOverlay"></canvas></div>
+    </section>
+
+    <section class="card">
+      <h2>雷达图（分别）</h2>
+      <div class="two-col">
+        <div>
+          <div class="subhead" th:text="${j1} + '（' + ${aRow.year} + '）'">journal A</div>
+          <div class="radar-wrap" style="--pm-chart-h:260px"><canvas id="radarA"></canvas></div>
+        </div>
+        <div>
+          <div class="subhead" th:text="${j2} + '（' + ${bRow.year} + '）'">journal B</div>
+          <div class="radar-wrap" style="--pm-chart-h:260px"><canvas id="radarB"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>关键指标对比（柱状图）</h2>
+      <div class="radar-wrap" style="--pm-chart-h:220px"><canvas id="barCompare"></canvas></div>
+    </section>
+
+    <section class="card">
+      <h2>对比分析</h2>
+      <div class="muted">按评价维度对比（基于最新年份）</div>
+      <ul class="analysis">
+        <li th:each="line : ${analysisLines}" th:text="${line}">line</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>评语对比</h2>
+      <div class="two-col">
+        <div class="comment">
+          <div class="comment-title" th:text="${j1}">journal A</div>
+          <div th:each="entry : ${aComments}">
+            <div class="comment-k" th:text="${entry.key}">key</div>
+            <div class="comment-body" th:text="${entry.value}">value</div>
+          </div>
+        </div>
+        <div class="comment">
+          <div class="comment-title" th:text="${j2}">journal B</div>
+          <div th:each="entry : ${bComments}">
+            <div class="comment-k" th:text="${entry.key}">key</div>
+            <div class="comment-body" th:text="${entry.value}">value</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Top Keywords (2021-2025)</h2>
+      <div class="two-col">
+        <div>
+          <div class="subhead" th:text="${j1}">journal A</div>
+          <div class="keywords-grid">
+            <div class="kw" th:each="entry : ${aKeywords}">
+              <div class="kw-title" th:text="${entry.year}">year</div>
+              <div class="tag-list" th:if="${entry.keywords != null && !entry.keywords.isEmpty()}">
+                <span class="tag" th:each="kw : ${entry.keywords}" th:text="${kw}">keyword</span>
+              </div>
+              <div class="muted" th:if="${entry.keywords == null || entry.keywords.isEmpty()}">（无数据）</div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="subhead" th:text="${j2}">journal B</div>
+          <div class="keywords-grid">
+            <div class="kw" th:each="entry : ${bKeywords}">
+              <div class="kw-title" th:text="${entry.year}">year</div>
+              <div class="tag-list" th:if="${entry.keywords != null && !entry.keywords.isEmpty()}">
+                <span class="tag" th:each="kw : ${entry.keywords}" th:text="${kw}">keyword</span>
+              </div>
+              <div class="muted" th:if="${entry.keywords == null || entry.keywords.isEmpty()}">（无数据）</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <script id="overlay-json" type="application/json" th:utext="${overlayJson}"></script>
+    <script id="a-radar-json" type="application/json" th:utext="${aRadarJson}"></script>
+    <script id="b-radar-json" type="application/json" th:utext="${bRadarJson}"></script>
+    <script id="bar-json" type="application/json" th:utext="${barJson}"></script>
+
+    <script>
+      const overlay = JSON.parse(document.getElementById('overlay-json').textContent);
+      const aRadar = JSON.parse(document.getElementById('a-radar-json').textContent);
+      const bRadar = JSON.parse(document.getElementById('b-radar-json').textContent);
+      const bar = JSON.parse(document.getElementById('bar-json').textContent);
+
+      function radarOptions(maxV) {
+        return {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: false,
+          resizeDelay: 120,
+          scales: {
+            r: {
+              beginAtZero: true,
+              suggestedMax: maxV || 100,
+              ticks: { stepSize: 50 }
+            }
+          }
+        };
+      }
+
+      if (overlay) {
+        new Chart(document.getElementById('radarOverlay'), {
+          type: 'radar',
+          data: {
+            labels: overlay.labels,
+            datasets: [
+              { label: overlay.a.name, data: overlay.a.values, fill: true, borderWidth: 2 },
+              { label: overlay.b.name, data: overlay.b.values, fill: true, borderWidth: 2 },
+            ]
+          },
+          options: radarOptions(overlay.max)
+        });
+      }
+
+      if (aRadar) {
+        new Chart(document.getElementById('radarA'), {
+          type: 'radar',
+          data: { labels: aRadar.labels, datasets: [{ label: '评分', data: aRadar.values, fill: true, borderWidth: 2 }] },
+          options: radarOptions(aRadar.max)
+        });
+      }
+
+      if (bRadar) {
+        new Chart(document.getElementById('radarB'), {
+          type: 'radar',
+          data: { labels: bRadar.labels, datasets: [{ label: '评分', data: bRadar.values, fill: true, borderWidth: 2 }] },
+          options: radarOptions(bRadar.max)
+        });
+      }
+
+      if (bar) {
+        new Chart(document.getElementById('barCompare'), {
+          type: 'bar',
+          data: {
+            labels: bar.labels,
+            datasets: [
+              { label: bar.a.name, data: bar.a.values },
+              { label: bar.b.name, data: bar.b.values },
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            resizeDelay: 120,
+            scales: {
+              y: { beginAtZero: true }
+            }
+          }
+        });
+      }
+    </script>
+    </div>
+  </div>
+</body>
+</html>

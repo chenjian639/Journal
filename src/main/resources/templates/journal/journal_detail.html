@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title th:text="'期刊详情 - ' + ${journal}">期刊详情</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script th:src="@{/js/components.js}"></script>
+  <script th:src="@{/js/markdown-renderer.js}"></script>
+</head>
+<body>
+  <!-- 导航栏容器 -->
+  <div id="navbar-container">
+    <nav class="navbar">
+      <a th:href="@{/}" class="navbar-brand">
+        <i class="fas fa-graduation-cap"></i>
+        PaperMaster
+      </a>
+      <div class="navbar-menu">
+        <a th:href="@{/}">首页</a>
+        <a th:href="@{/journal/rankings}">期刊排名</a>
+        <a th:href="@{/analysis.html}">期刊分析</a>
+        <a th:href="@{/auth/login.html}">登录</a>
+        <a th:href="@{/auth/register.html}" class="btn btn-primary">注册</a>
+      </div>
+    </nav>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <div class="row">
+        <div>
+          <h1>期刊详情</h1>
+          <div class="muted" th:text="${journal}">期刊名</div>
+        </div>
+        <div>
+          <a class="btn" th:href="@{/journal}">返回列表</a>
+        </div>
+      </div>
+    </header>
+
+    <section class="card">
+      <h2>年度指标</h2>
+      <div class="muted">按 year 倒序展示</div>
+
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>year</th>
+              <th>disruption</th>
+              <th>interdisciplinary</th>
+              <th>novelty</th>
+              <th>topic</th>
+              <th>theme_concentration</th>
+              <th>hot_response</th>
+              <th>paper_count</th>
+              <th>category</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="r : ${rows}">
+              <td th:text="${r.year ?: ''}">year</td>
+              <td th:text="${r.disruption ?: ''}">disruption</td>
+              <td th:text="${r.interdisciplinary ?: ''}">interdisciplinary</td>
+              <td th:text="${r.novelty ?: ''}">novelty</td>
+              <td th:text="${r.topic ?: ''}">topic</td>
+              <td th:text="${r.themeConcentration ?: ''}">theme</td>
+              <td th:text="${r.hotResponse ?: ''}">hot</td>
+              <td th:text="${r.paperCount ?: ''}">paper_count</td>
+              <td th:text="${r.category ?: ''}">category</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>综合评价</h2>
+      <div class="muted">雷达图元素：内容前沿性=disruption+novelty；学科开放性=interdisciplinary；主题集中度=theme_concentration；主题多样性=topic；热点响应度=hot_response</div>
+
+      <div class="radar-wrap" style="--pm-chart-h:260px">
+        <canvas id="radarChart"></canvas>
+      </div>
+
+      <div class="comment-grid">
+        <div class="comment" th:each="entry : ${comments}">
+          <div class="comment-title" th:text="${entry.key}">key</div>
+          <div class="comment-body" th:text="${entry.value}">value</div>
+        </div>
+      </div>
+
+      <script id="radarJson" type="application/json" th:utext="${radarJson}"></script>
+      <script>
+        const radar = JSON.parse(document.getElementById('radarJson').textContent);
+        const ctx = document.getElementById('radarChart');
+        new Chart(ctx, {
+          type: 'radar',
+          data: {
+            labels: radar.labels,
+            datasets: [{
+              label: '评分',
+              data: radar.values,
+              fill: true,
+              borderWidth: 2,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            resizeDelay: 120,
+            scales: {
+              r: {
+                beginAtZero: true,
+                suggestedMax: radar.max || 100,
+                ticks: { stepSize: 50 }
+              }
+            }
+          }
+        });
+      </script>
+    </section>
+
+    <section class="card">
+      <div class="row">
+        <div>
+          <h2>AI 分析</h2>
+          <div class="muted">点击后将调用模型对该期刊做一次分析（基于最新年份数据）。</div>
+        </div>
+        <div>
+          <button id="aiAnalyzeBtn" class="btn btn-primary" type="button" th:attr="data-journal=${journal}">开始分析</button>
+        </div>
+      </div>
+
+      <div id="aiStatus" class="muted" style="margin-top: 8px;"></div>
+      <div id="aiResult" class="ai-result pm-markdown" style="display:none;"></div>
+
+      <script>
+        const aiBtn = document.getElementById('aiAnalyzeBtn');
+        const aiStatus = document.getElementById('aiStatus');
+        const aiResult = document.getElementById('aiResult');
+        const journalName = aiBtn.dataset.journal;
+
+        async function runAi() {
+          aiBtn.disabled = true;
+          aiStatus.textContent = '正在调用 AI 分析，请稍候...';
+          aiResult.style.display = 'none';
+          aiResult.textContent = '';
+
+          try {
+            const resp = await fetch(`/journal/${encodeURIComponent(journalName)}/ai-analysis`, {
+              method: 'POST',
+            });
+            const data = await resp.json();
+            if (!resp.ok) {
+              throw new Error(data?.detail || '请求失败');
+            }
+            aiStatus.textContent = `分析完成（模型：${data.used_model || ''}）`;
+            aiResult.style.display = 'block';
+            if (window.PaperMasterMarkdown && typeof window.PaperMasterMarkdown.render === 'function') {
+              aiResult.innerHTML = window.PaperMasterMarkdown.render(data.analysis || '');
+            } else {
+              aiResult.textContent = data.analysis || '';
+            }
+          } catch (e) {
+            aiStatus.textContent = `分析失败：${e.message || e}`;
+          } finally {
+            aiBtn.disabled = false;
+          }
+        }
+
+        aiBtn.addEventListener('click', runAi);
+      </script>
+    </section>
+
+    <section class="card">
+      <h2>Top Keywords (2021-2025)</h2>
+      <div class="muted">来自该期刊最新年份行的 top_keywords_2021~2025 字段</div>
+
+      <div class="keywords-grid" id="topKeywordsGrid">
+        <div class="kw" th:each="entry : ${topKeywords}" th:attr="data-year=${entry.year}">
+          <div class="kw-title" th:text="${entry.year}">year</div>
+          <div class="tag-list" th:if="${entry.keywords != null && !entry.keywords.isEmpty()}">
+            <span class="tag" th:each="kw : ${entry.keywords}" th:text="${kw}">keyword</span>
+          </div>
+          <div class="muted" th:if="${entry.keywords == null || entry.keywords.isEmpty()}">（无数据）</div>
+        </div>
+      </div>
+
+      <script th:inline="javascript">
+        (function () {
+          const datasetUsername = /*[[${datasetUsername}]]*/ null;
+          const journal = /*[[${journal}]]*/ '';
+          const grid = document.getElementById('topKeywordsGrid');
+          if (!grid) return;
+
+          function escapeHtml(str) {
+            return String(str)
+              .replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')
+              .replace(/\"/g, '&quot;')
+              .replace(/'/g, '&#039;');
+          }
+
+          function parseCsvText(csvText) {
+            const text = (csvText || '').replace(/^\uFEFF/, '');
+            const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+            if (lines.length < 2) return [];
+
+            const parseLine = (line) => {
+              const cells = [];
+              let current = '';
+              let inQuotes = false;
+              for (let i = 0; i < line.length; i++) {
+                const ch = line[i];
+                if (ch === '"') {
+                  if (inQuotes && line[i + 1] === '"') {
+                    current += '"';
+                    i++;
+                  } else {
+                    inQuotes = !inQuotes;
+                  }
+                } else if (ch === ',' && !inQuotes) {
+                  cells.push(current);
+                  current = '';
+                } else {
+                  current += ch;
+                }
+              }
+              cells.push(current);
+              return cells.map(c => c.trim());
+            };
+
+            const headers = parseLine(lines[0]).map(h => h.trim());
+            const rows = [];
+            for (let i = 1; i < lines.length; i++) {
+              const cols = parseLine(lines[i]);
+              const obj = {};
+              for (let j = 0; j < headers.length; j++) {
+                obj[headers[j]] = cols[j] ?? '';
+              }
+              rows.push(obj);
+            }
+            return rows;
+          }
+
+          async function loadCountsAndRender() {
+            // 没有用户数据集时：保持原来 DB 的 top_keywords 展示（不做额外请求）
+            if (!datasetUsername) return;
+
+            const relPath = 'keywords/keyword_counts_2021_2025_top20.csv';
+            const url = `/analysis/outputs/file?username=${encodeURIComponent(datasetUsername)}&path=${encodeURIComponent(relPath)}`;
+            const resp = await fetch(url);
+            if (!resp.ok) return;
+
+            const csvText = await resp.text();
+            const rows = parseCsvText(csvText);
+            const items = rows
+              .map(r => ({
+                journal: (r.journal || '').trim(),
+                year: Number((r.year || '').trim()),
+                keyword: (r.keyword || '').trim(),
+                count: Number((r.count || '').trim()),
+              }))
+              .filter(x => x.journal && Number.isFinite(x.year) && x.keyword);
+
+            const filtered = items
+              .filter(x => x.journal === journal && x.year >= 2021 && x.year <= 2025)
+              .sort((a, b) => (b.count || 0) - (a.count || 0));
+            if (filtered.length === 0) return;
+
+            const byYear = new Map();
+            for (const it of filtered) {
+              if (!byYear.has(it.year)) byYear.set(it.year, []);
+              byYear.get(it.year).push(it);
+            }
+            for (const [, arr] of byYear) {
+              arr.sort((a, b) => (b.count || 0) - (a.count || 0));
+            }
+
+            // 复用原来的 year 卡片位置，替换 tag-list 内容为 Top5(含次数)
+            const cards = Array.from(grid.querySelectorAll('.kw[data-year]'));
+            for (const card of cards) {
+              const y = Number(card.getAttribute('data-year'));
+              const list = byYear.get(y) || [];
+              const top5 = list.slice(0, 5);
+              const tagList = card.querySelector('.tag-list');
+              const emptyTip = card.querySelector('.muted');
+
+              if (top5.length === 0) {
+                if (tagList) tagList.innerHTML = '';
+                if (emptyTip) emptyTip.textContent = '（无数据）';
+                continue;
+              }
+
+              if (emptyTip) emptyTip.remove();
+              let tl = tagList;
+              if (!tl) {
+                tl = document.createElement('div');
+                tl.className = 'tag-list';
+                card.appendChild(tl);
+              }
+              tl.innerHTML = top5.map(it => {
+                const label = it.count ? `${it.keyword} (${it.count})` : it.keyword;
+                return `<span class="tag">${escapeHtml(label)}</span>`;
+              }).join('');
+            }
+          }
+
+          loadCountsAndRender().catch(() => {
+            // 静默失败：不影响原有展示
+          });
+        })();
+      </script>
+    </section>
+  </div>
+</body>
+</html>

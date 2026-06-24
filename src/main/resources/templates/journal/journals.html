@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>期刊列表</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+  <!-- 导航栏容器 -->
+  <div id="navbar-container">
+    <nav class="navbar">
+      <a th:href="@{/}" class="navbar-brand">
+        <i class="fas fa-graduation-cap"></i>
+        PaperMaster
+      </a>
+      <div class="navbar-menu">
+        <a th:href="@{/}">首页</a>
+        <a th:href="@{/journal}">期刊列表</a>
+        <a th:href="@{/analysis.html}">期刊分析</a>
+        <a th:href="@{/auth/login.html}">登录</a>
+        <a th:href="@{/auth/register.html}" class="btn btn-primary">注册</a>
+      </div>
+    </nav>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <h1>期刊列表</h1>
+      <div class="muted">数据来源：MySQL 表 journal_metrics</div>
+    </header>
+
+    <div class="card">
+      <div class="toolbar">
+        <input id="searchInput" class="input" type="search" placeholder="搜索期刊名..." autocomplete="off" />
+        <div class="toolbar-right">
+          <button id="recommendBtn" class="btn" type="button">个人期刊推荐</button>
+          <button id="compareBtn" class="btn btn-primary" type="button" disabled>对比（选择 2 本）</button>
+          <div class="muted">点击表头可排序：期刊 / 最新年份 / 论文数量</div>
+        </div>
+      </div>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th style="width: 64px;">对比</th>
+            <th class="sortable" data-sort-col="journal" data-sort-type="text">期刊</th>
+            <th class="sortable" data-sort-col="latest_year" data-sort-type="number">最新年份</th>
+            <th>学科/类别</th>
+            <th class="sortable" data-sort-col="paper_count" data-sort-type="number">论文数量</th>
+            <th>新颖性</th>
+            <th>颠覆性</th>
+            <th>跨学科性</th>
+          </tr>
+        </thead>
+        <tbody>
+        <tr th:each="j : ${journals}">
+            <td>
+              <input class="compare-check" type="checkbox" th:value="${j.journal}" />
+            </td>
+            <td th:attr="data-sort=${#strings.toLowerCase(j.journal ?: '')}">
+              <a th:href="@{/journal/{journal}(journal=${j.journal})}" th:text="${j.journal}">期刊名</a>
+            </td>
+            <td th:attr="data-sort=${j.year ?: ''}" th:text="${j.year ?: ''}">年份</td>
+            <td th:text="${j.category ?: ''}">类别</td>
+            <td th:attr="data-sort=${j.paperCount ?: ''}" th:text="${j.paperCount ?: ''}">数量</td>
+            <td th:text="${j.novelty != null ? #numbers.formatDecimal(j.novelty, 1, 2) : ''}">新颖性</td>
+            <td th:text="${j.disruption != null ? #numbers.formatDecimal(j.disruption, 1, 2) : ''}">颠覆性</td>
+            <td th:text="${j.interdisciplinary != null ? #numbers.formatDecimal(j.interdisciplinary, 1, 2) : ''}">跨学科</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="empty" th:if="${journals == null || journals.isEmpty()}">没有查到任何期刊数据（journal_metrics 可能为空）。</div>
+    </div>
+  </div>
+
+  <script>
+    const input = document.getElementById('searchInput');
+    const table = document.querySelector('table.table');
+    const tbody = table.querySelector('tbody');
+
+    function normalize(s) {
+      return (s || '').toString().trim().toLowerCase();
+    }
+
+    function applyFilter() {
+      const q = normalize(input.value);
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+      rows.forEach(r => {
+        // 第 0 列是“对比”复选框，第 1 列才是“期刊”
+        const journalCell = r.children[1];
+        const name = normalize(journalCell ? journalCell.textContent : '');
+        r.style.display = (!q || name.includes(q)) ? '' : 'none';
+      });
+    }
+
+    input.addEventListener('input', applyFilter);
+
+    let sortState = { colIndex: null, asc: true, type: 'text' };
+
+    function parseValue(v, type) {
+      if (type === 'number') {
+        const n = parseFloat((v ?? '').toString().replace(/[^0-9.\-]/g, ''));
+        return Number.isFinite(n) ? n : Number.NEGATIVE_INFINITY;
+      }
+      return normalize(v);
+    }
+
+    function sortBy(colIndex, type) {
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+      const asc = (sortState.colIndex === colIndex) ? !sortState.asc : true;
+      sortState = { colIndex, asc, type };
+
+      rows.sort((a, b) => {
+        const aCell = a.children[colIndex];
+        const bCell = b.children[colIndex];
+        const av = parseValue(aCell?.dataset?.sort || aCell?.textContent, type);
+        const bv = parseValue(bCell?.dataset?.sort || bCell?.textContent, type);
+        if (av < bv) return asc ? -1 : 1;
+        if (av > bv) return asc ? 1 : -1;
+        return 0;
+      });
+
+      rows.forEach(r => tbody.appendChild(r));
+      applyFilter();
+    }
+
+    document.querySelectorAll('th.sortable').forEach(th => {
+      th.addEventListener('click', () => {
+        const idx = Array.from(th.parentNode.children).indexOf(th);
+        sortBy(idx, th.dataset.sortType || 'text');
+      });
+    });
+
+    // 对比：最多选 2 本
+    const compareBtn = document.getElementById('compareBtn');
+    const recommendBtn = document.getElementById('recommendBtn');
+    function selectedJournals() {
+      return Array.from(document.querySelectorAll('.compare-check:checked')).map(x => x.value);
+    }
+
+    function updateCompareBtn() {
+      const sel = selectedJournals();
+      compareBtn.disabled = sel.length !== 2;
+      compareBtn.textContent = sel.length === 2 ? '开始对比' : `对比（已选 ${sel.length}/2）`;
+    }
+
+    document.addEventListener('change', (e) => {
+      if (!e.target.classList || !e.target.classList.contains('compare-check')) return;
+      const sel = selectedJournals();
+      if (sel.length > 2) {
+        e.target.checked = false;
+      }
+      updateCompareBtn();
+    });
+
+    compareBtn.addEventListener('click', () => {
+      const sel = selectedJournals();
+      if (sel.length !== 2) return;
+      const url = `/journal/compare?j1=${encodeURIComponent(sel[0])}&j2=${encodeURIComponent(sel[1])}`;
+      window.location.href = url;
+    });
+
+    // 个人期刊推荐：先检查是否已填写问卷（cookie: pm_survey）
+    function hasSurveyCookie() {
+      return document.cookie.split(';').some(c => c.trim().startsWith('pm_survey='));
+    }
+
+    recommendBtn.addEventListener('click', () => {
+      window.location.href = hasSurveyCookie() ? '/journal/recommend' : '/journal/survey';
+    });
+
+    updateCompareBtn();
+  </script>
+  <script th:src="@{/js/components.js}"></script>
+</body>
+</html>

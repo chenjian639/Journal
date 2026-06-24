@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>个人期刊推荐</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body>
+  <!-- 导航栏容器 -->
+  <div id="navbar-container">
+    <nav class="navbar">
+      <a th:href="@{/}" class="navbar-brand">
+        <i class="fas fa-graduation-cap"></i>
+        PaperMaster
+      </a>
+      <div class="navbar-menu">
+        <a th:href="@{/}">首页</a>
+        <a th:href="@{/journal/rankings}">期刊排名</a>
+        <a th:href="@{/analysis.html}">期刊分析</a>
+        <a th:href="@{/auth/login.html}">登录</a>
+        <a th:href="@{/auth/register.html}" class="btn btn-primary">注册</a>
+      </div>
+    </nav>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <div class="row">
+        <div>
+          <h1>个人期刊推荐</h1>
+          <div class="muted">基于关键词命中 + 雷达匹配度（默认使用各期刊最新年份指标）。</div>
+        </div>
+        <div class="toolbar-right">
+          <a class="btn" th:href="@{/journal/survey}">修改问卷</a>
+          <a class="btn" th:href="@{/journal/rankings}">返回期刊排名</a>
+        </div>
+      </div>
+    </header>
+
+    <section class="card">
+      <h2>你的画像（雷达图）</h2>
+      <div class="muted">维度：内容前沿性 / 学科开放性 / 主题集中度 / 主题多样性 / 热点响应度</div>
+      <div class="radar-wrap" style="--pm-chart-h:240px"><canvas id="userRadar"></canvas></div>
+
+      <div class="comment-grid" style="margin-top: 14px;">
+        <div class="comment" th:each="entry : ${userComments}">
+          <div class="comment-title" th:text="${entry.key}">key</div>
+          <div class="comment-body" th:text="${entry.value}">value</div>
+        </div>
+      </div>
+
+      <script id="user-radar-json" type="application/json" th:utext="${userRadarJson}"></script>
+      <script>
+        const userRadar = JSON.parse(document.getElementById('user-radar-json').textContent);
+        new Chart(document.getElementById('userRadar'), {
+          type: 'radar',
+          data: { labels: userRadar.labels, datasets: [{ label: '你的画像', data: userRadar.values, fill: true, borderWidth: 2 }] },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            resizeDelay: 120,
+            scales: { r: { beginAtZero: true, suggestedMax: userRadar.max || 100, ticks: { stepSize: 50 } } }
+          }
+        });
+      </script>
+    </section>
+
+    <section class="card">
+      <h2 th:text="|关键词命中（${targetYear}）|">关键词命中</h2>
+      <div class="muted" th:text="|今年热点研究该词语的期刊：取该期刊最新年份行的 top_keywords（优先 ${targetYear}，无则回退最近年份）。|">desc</div>
+
+      <div class="hits">
+        <div class="hit" th:each="entry : ${kwHits}">
+          <div class="hit-title" th:text="${entry.key}">keyword</div>
+          <div class="tag-list" th:if="${entry.value != null && !entry.value.isEmpty()}">
+            <a class="tag" th:each="j, iterStat : ${entry.value}" 
+               th:if="${iterStat.index < 12}"
+               th:href="@{/journal/recommend/{journal}(journal=${j})}" 
+               th:text="${j}">journal</a>
+          </div>
+          <div class="muted" th:if="${entry.value != null && entry.value.size() > 12}">（仅展示前 12 本）</div>
+          <div class="muted" th:if="${entry.value == null || entry.value.isEmpty()}">（未命中）</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>推荐期刊（Top 10）</h2>
+      <div class="muted">综合得分 = 关键词命中比例(60%) + 雷达相似度(40%)。点击“进一步分析”查看你与期刊的适配维度与评语。</div>
+
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>期刊</th>
+              <th>期刊年份</th>
+              <th>学科/类别</th>
+              <th>命中关键词</th>
+              <th>雷达匹配度</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+          <tr th:each="r : ${recs}">
+            <td th:text="${r.journal}">journal</td>
+            <td th:text="${r.year}">year</td>
+            <td th:text="${r.category ?: ''}">category</td>
+            <td>
+              <div class="tag-list" th:if="${r['matched_keywords'] != null && !r['matched_keywords'].isEmpty()}">
+                <span class="tag" th:each="k, iterStat : ${r['matched_keywords']}" 
+                      th:if="${iterStat.index < 8}"
+                      th:text="${k}">keyword</span>
+              </div>
+              <span class="muted" th:if="${r['matched_keywords'] == null || r['matched_keywords'].isEmpty()}">（无命中）</span>
+            </td>
+            <td th:text="${r['match_pct']} + '%'"></td>
+            <td><a class="btn btn-primary" th:href="@{/journal/recommend/{journal}(journal=${r.journal})}">进一步分析</a></td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="empty" th:if="${recs == null || recs.isEmpty()}">没有生成推荐结果（可能 journal_metrics 为空）。</div>
+    </section>
+  </div>
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>报告下载 - PaperMaster</title>
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+</head>
+<body>
+  <div id="navbar-container"></div>
+
+  <div class="container">
+    <header class="header">
+      <div class="row">
+        <div>
+          <h1>报告下载</h1>
+          <div class="muted">选择历史分析记录，下载报告 ZIP（包含分析结果文件 + 每个期刊的详情页静态 HTML，不含 AI 分析部分）。</div>
+        </div>
+        <div class="toolbar-right">
+          <a class="btn btn-outline" href="/analysis.html"><i class="fas fa-chart-pie"></i> 去分析</a>
+        </div>
+      </div>
+    </header>
+
+    <section class="card" id="emptyState" style="display:none;">
+      <h2>你还没有分析过数据</h2>
+      <div class="muted" style="margin-top: 8px;">快去分析吧～完成一次分析后，这里就可以选择并下载报告。</div>
+      <div style="margin-top: 14px;">
+        <a class="btn btn-primary" href="/analysis.html"><i class="fas fa-play"></i> 前往分析页面</a>
+      </div>
+    </section>
+
+    <section class="card" id="pickerCard" style="display:none;">
+      <h2>选择要下载的报告</h2>
+      <div class="muted" id="pickerHint" style="margin-top: 8px;"></div>
+
+      <div class="field" style="margin-top: 12px;">
+        <div class="label">分析记录</div>
+        <select class="select" id="analysisSelect"></select>
+      </div>
+
+      <div class="survey-actions" style="justify-content:flex-start; gap: 10px;">
+        <button class="btn btn-primary" id="downloadBtn"><i class="fas fa-download"></i> 下载报告 ZIP</button>
+        <a class="btn btn-outline" href="/analysis.html"><i class="fas fa-arrow-right"></i> 继续分析</a>
+      </div>
+
+      <div class="muted" style="margin-top: 10px;">
+        提示：报告会按当次分析记录生成；若包含大量期刊，打包时间会更长。
+      </div>
+    </section>
+  </div>
+
+  <script src="/js/components.js"></script>
+  <script src="/js/report_download.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!requireLogin('/report_download.html')) return;
+      window.ReportDownloadPage && window.ReportDownloadPage.init();
+    });
+  </script>
+</body>
+</html>

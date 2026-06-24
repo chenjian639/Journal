@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>个人分析问卷 - PaperMaster</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+  <!-- 导航栏容器 -->
+  <div id="navbar-container"></div>
+
+  <div class="container">
+    <div class="survey-hero">
+      <div class="survey-hero-left">
+        <div class="survey-hero-badge"><i class="fas fa-clipboard-list"></i></div>
+        <div>
+          <h1 class="survey-title">个人分析问卷</h1>
+          <div class="survey-subtitle">用 1 分钟生成你的研究偏好画像，并据此为你匹配更适合投稿的期刊。</div>
+          <div class="survey-meta">
+            <span><i class="fas fa-shield-alt"></i> 仅保存在本机 Cookie（7 天）</span>
+            <span><i class="fas fa-bolt"></i> 提交后自动进入推荐结果</span>
+          </div>
+        </div>
+      </div>
+      <div class="survey-hero-right">
+        <a class="btn btn-outline" th:href="@{/journal/rankings}"><i class="fas fa-arrow-left"></i> 返回期刊排名</a>
+        <a class="btn btn-primary" th:href="@{/journal/recommend}"><i class="fas fa-magic"></i> 查看推荐（已填可直接进）</a>
+      </div>
+    </div>
+
+    <div th:if="${param.error != null}" class="pm-alert pm-alert-error">
+      <div class="pm-alert-title"><i class="fas fa-circle-exclamation"></i> 关键词不能为空</div>
+      <div class="pm-alert-body">请至少填写 1 个研究领域关键词（建议 3-10 个），再提交分析。</div>
+    </div>
+
+    <section class="card survey-card">
+      <form class="survey-form" method="post" th:action="@{/journal/survey/analyze}">
+        <div class="field">
+          <div class="label">研究领域关键词</div>
+          <div class="muted" style="margin: 0 0 8px;">可中文/英文，多个用逗号、分号或换行分隔。</div>
+          <textarea class="textarea" name="keywords" rows="3"
+                    placeholder="例如：graph neural network; citation analysis; disruption index\n（需要时可写英文）"
+                    required
+                    th:text="${survey != null ? survey.keywordsRaw : ''}"></textarea>
+          <div class="survey-help">建议 3-10 个关键词，越贴近你的论文主题越好。</div>
+        </div>
+
+        <div class="pm-divider"></div>
+        <div class="survey-section-title">研究风格倾向</div>
+        <div class="muted" style="margin: 0 0 10px;">以下问题从写作倾向侧面了解你的研究风格（1=不太符合，5=非常符合）。</div>
+
+        <div class="survey-grid">
+          <div class="survey-q" th:with="v=${survey != null && survey.novelty != null ? (T(java.lang.Math).round(survey.novelty / 25.0) + 1) : 3}">
+            <div class="survey-q-row">
+              <div class="survey-q-text">
+                <div class="survey-q-title">你更可能提出或引入新的概念/视角（而不是仅复用既有套路）</div>
+                <div class="survey-q-scale"><span>1 不太符合</span><span>5 非常符合</span></div>
+              </div>
+              <div class="survey-q-choices">
+                <div class="likert" role="radiogroup" aria-label="新颖性倾向">
+                  <label class="likert-opt" th:each="i : ${#numbers.sequence(1,5)}">
+                    <input type="radio" name="qNovelty" th:value="${i}" required th:checked="${i == v}" />
+                    <span th:text="${i}"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="survey-q" th:with="v=${survey != null && survey.disruption != null ? (T(java.lang.Math).round(survey.disruption / 25.0) + 1) : 3}">
+            <div class="survey-q-row">
+              <div class="survey-q-text">
+                <div class="survey-q-title">你的工作更可能挑战或改变某一领域的经典结论/主流方法</div>
+                <div class="survey-q-scale"><span>1 不太符合</span><span>5 非常符合</span></div>
+              </div>
+              <div class="survey-q-choices">
+                <div class="likert" role="radiogroup" aria-label="颠覆性倾向">
+                  <label class="likert-opt" th:each="i : ${#numbers.sequence(1,5)}">
+                    <input type="radio" name="qDisruption" th:value="${i}" required th:checked="${i == v}" />
+                    <span th:text="${i}"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="survey-q" th:with="v=${survey != null && survey.interdisciplinary != null ? (T(java.lang.Math).round(survey.interdisciplinary / 25.0) + 1) : 3}">
+            <div class="survey-q-row">
+              <div class="survey-q-text">
+                <div class="survey-q-title">你的研究是否涉及多个学科的交互（例如方法/理论/数据来自不同学科）</div>
+                <div class="survey-q-scale"><span>1 不太符合</span><span>5 非常符合</span></div>
+              </div>
+              <div class="survey-q-choices">
+                <div class="likert" role="radiogroup" aria-label="跨学科倾向">
+                  <label class="likert-opt" th:each="i : ${#numbers.sequence(1,5)}">
+                    <input type="radio" name="qInterdisciplinary" th:value="${i}" required th:checked="${i == v}" />
+                    <span th:text="${i}"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="survey-q" th:with="v=${survey != null && survey.themeConcentration != null ? (T(java.lang.Math).round(survey.themeConcentration / 25.0) + 1) : 3}">
+            <div class="survey-q-row">
+              <div class="survey-q-text">
+                <div class="survey-q-title">你的论文更像围绕一个核心主题持续深挖（聚焦）</div>
+                <div class="survey-q-scale"><span>1 不太符合</span><span>5 非常符合</span></div>
+              </div>
+              <div class="survey-q-choices">
+                <div class="likert" role="radiogroup" aria-label="主题聚焦倾向">
+                  <label class="likert-opt" th:each="i : ${#numbers.sequence(1,5)}">
+                    <input type="radio" name="qThemeConcentration" th:value="${i}" required th:checked="${i == v}" />
+                    <span th:text="${i}"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="survey-q" th:with="v=${survey != null && survey.topic != null ? (T(java.lang.Math).round(survey.topic / 25.0) + 1) : 3}">
+            <div class="survey-q-row">
+              <div class="survey-q-text">
+                <div class="survey-q-title">你的论文通常会覆盖多个子方向/议题（范围更广）</div>
+                <div class="survey-q-scale"><span>1 不太符合</span><span>5 非常符合</span></div>
+              </div>
+              <div class="survey-q-choices">
+                <div class="likert" role="radiogroup" aria-label="议题广度倾向">
+                  <label class="likert-opt" th:each="i : ${#numbers.sequence(1,5)}">
+                    <input type="radio" name="qTopic" th:value="${i}" required th:checked="${i == v}" />
+                    <span th:text="${i}"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="survey-q" th:with="v=${survey != null && survey.hotResponse != null ? (T(java.lang.Math).round(survey.hotResponse / 25.0) + 1) : 3}">
+            <div class="survey-q-row">
+              <div class="survey-q-text">
+                <div class="survey-q-title">你的研究更倾向于跟进或捕捉当下热点问题（响应快）</div>
+                <div class="survey-q-scale"><span>1 不太符合</span><span>5 非常符合</span></div>
+              </div>
+              <div class="survey-q-choices">
+                <div class="likert" role="radiogroup" aria-label="热点响应倾向">
+                  <label class="likert-opt" th:each="i : ${#numbers.sequence(1,5)}">
+                    <input type="radio" name="qHotResponse" th:value="${i}" required th:checked="${i == v}" />
+                    <span th:text="${i}"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="survey-actions">
+          <button class="btn btn-primary" type="submit"><i class="fas fa-wand-magic-sparkles"></i> 提交并生成推荐</button>
+          <a class="btn btn-outline" th:href="@{/journal/recommend}"><i class="fas fa-forward"></i> 已填过，直接进入</a>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <script th:src="@{/js/components.js}"></script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PaperMaster - 学术论文管理系统</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- 导航栏容器 -->
+    <div id="navbar-container"></div>
+
+    <div class="container">
+        <div class="search-hero">
+            <h1 class="search-title">PaperMaster</h1>
+            <p class="hero-subtitle">学术论文管理与智能分析平台</p>
+        </div>
+
+        <div class="features-section">
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-chart-pie"></i></div>
+                <h3>期刊分析</h3>
+                <p>上传论文数据，获取详细的统计分析报告，包括引用分析、领域分布等。</p>
+                <a href="analysis.html" class="btn btn-primary feature-btn" data-require-login="true">开始分析</a>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-clipboard-list"></i></div>
+                <h3>个人分析问卷</h3>
+                <p>填写研究偏好与关键词，生成个人画像，并获得更匹配的期刊推荐。</p>
+                <a href="/journal/survey" class="btn btn-outline feature-btn">开始问卷</a>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon"><span class="icon-text">DS</span></div>
+                <h3>AI 助手</h3>
+                <p>智能对话助手，帮助您解读分析结果、解答学术问题。</p>
+                <a href="analysis.html" class="btn btn-outline feature-btn" data-require-login="true">立即体验</a>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-list"></i></div>
+                <h3>期刊列表</h3>
+                <p>浏览期刊列表与指标排名，支持搜索与筛选。</p>
+                <a href="/journal/rankings" class="btn btn-outline feature-btn">立即前往</a>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-tags"></i></div>
+                <h3>关键词分析</h3>
+                <p>查看关键词出现在哪些论文中、归属期刊、最早出现期刊与最高频期刊。</p>
+                <a href="/keyword_analysis.html" class="btn btn-outline feature-btn">立即前往</a>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon"><i class="fas fa-file-zipper"></i></div>
+                <h3>报告下载</h3>
+                <p>选择一次历史分析，下载完整报告包（含期刊详情页静态版本，不含 AI 分析）。</p>
+                <a href="/report_download.html" class="btn btn-outline feature-btn" data-require-login="true">前往下载</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/components.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!isLoggedIn()) {
+                document.querySelectorAll('.feature-btn[data-require-login="true"]').forEach(btn => {
+                    const originalHref = btn.getAttribute('href');
+                    btn.textContent = '登录后使用';
+                    const redirectPath = originalHref.startsWith('/') ? originalHref : '/' + originalHref;
+                    btn.href = '/auth/login.html?redirect=' + encodeURIComponent(redirectPath);
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-outline');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

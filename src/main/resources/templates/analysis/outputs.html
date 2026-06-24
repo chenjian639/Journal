@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>分析输出（outputs）</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+  <div id="navbar-container">
+    <nav class="navbar">
+      <a th:href="@{/}" class="navbar-brand">
+        <i class="fas fa-graduation-cap"></i>
+        PaperMaster
+      </a>
+      <div class="navbar-menu">
+        <a th:href="@{/}">首页</a>
+        <a th:href="@{/journal/rankings}">期刊排名</a>
+        <a th:href="@{/analysis.html}">期刊分析</a>
+      </div>
+    </nav>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <div class="row">
+        <div>
+          <h1>分析输出（outputs）</h1>
+          <div class="muted">username：<span th:text="${username}">user</span></div>
+        </div>
+        <div>
+          <a class="btn" th:href="${zipUrl}"><i class="fas fa-download"></i> 下载ZIP（全量）</a>
+          <a class="btn btn-outline" th:href="${resultUrl}">打开 analysis_result.json</a>
+        </div>
+      </div>
+      <div class="muted" style="margin-top:8px;">
+        这里展示的是 uploads/&lt;username&gt;/outputs 下的 CSV/JSON。你可以直接点开 theme/theme.csv 查看 Top-5 关键词等全量字段。
+      </div>
+    </header>
+
+    <section class="card">
+      <h2>文件列表</h2>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>path</th>
+              <th style="width:120px;">size</th>
+              <th style="width:220px;">lastModified</th>
+              <th style="width:140px;">action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="f : ${items}">
+              <td>
+                <a th:href="@{/analysis/outputs/file(username=${username},path=${f.path})}" th:text="${f.path}">file</a>
+              </td>
+              <td th:text="${f.size}">0</td>
+              <td th:text="${f.lastModified}">-</td>
+              <td>
+                <a class="btn btn-outline" th:href="@{/analysis/outputs/file(username=${username},path=${f.path})}">下载</a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

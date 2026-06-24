@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>期刊分析 - PaperMaster</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- 导航栏容器 -->
+    <div id="navbar-container"></div>
+
+    <div class="container">
+        <div class="analysis-page">
+            <h1 class="page-title"><i class="fas fa-chart-pie"></i> 期刊分析</h1>
+
+            <div class="page-switch" aria-label="rankings links">
+                <a class="switch-btn" href="/journal/rankings">
+                    <i class="fas fa-trophy"></i> 前往总榜单
+                </a>
+                <a class="switch-btn" href="/journal/my-rankings">
+                    <i class="fas fa-user"></i> 前往个人榜单
+                </a>
+            </div>
+            
+            <div class="analysis-layout">
+                <!-- 左侧：上传和分析结果 -->
+                <div class="analysis-left">
+                    <div class="card upload-card">
+                        <h3><i class="fas fa-upload"></i> 数据上传</h3>
+                        <p class="text-muted">支持 JSON 和 CSV 格式的论文数据文件</p>
+                        
+                        <div class="upload-area" id="uploadArea">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <p>点击或拖拽文件到此处上传</p>
+                            <input type="file" id="fileInput" accept=".json,.csv" hidden>
+                        </div>
+                        
+                        <div id="uploadedFiles" class="uploaded-files"></div>
+                        
+                        <div class="action-buttons">
+                            <button id="runAnalysisBtn" class="btn btn-primary btn-lg">
+                                <i class="fas fa-play"></i> 开始分析
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card result-card" id="resultCard" style="display: none;">
+                        <div class="result-header">
+                            <h3><i class="fas fa-chart-bar"></i> 分析结果</h3>
+                            <div class="result-actions">
+                                <button id="downloadBtn" class="btn btn-success" onclick="downloadResults()" title="打包下载所有分析结果">
+                                    <i class="fas fa-download"></i> 下载结果
+                                </button>
+                            </div>
+                        </div>
+                        <div id="analysisLoader" class="loader" style="display: none;"></div>
+                        <div id="analysisResult"></div>
+                    </div>
+                </div>
+
+                <!-- 右侧：AI对话 + 历史记录 -->
+                <div class="analysis-right">
+                    <div class="card chat-card">
+                        <h3><svg class="deepseek-icon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg> AI 助手</h3>
+                        <p class="text-muted">有问题？问问AI助手吧！</p>
+                        
+                        <div class="chat-container" id="chatContainer">
+                            <div class="chat-messages" id="chatMessages">
+                                <div class="chat-message bot">
+                                    <div class="message-avatar"><span class="ds-logo">DS</span></div>
+                                    <div class="message-content">您好！我是期刊分析AI助手。您可以问我任何关于论文分析的问题。</div>
+                                </div>
+                            </div>
+                            
+                            <div class="chat-input-area">
+                                <input type="text" id="chatInput" class="form-control" placeholder="输入您的问题..." />
+                                <button id="sendBtn" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 分析历史 - 放在AI助手下方 -->
+                    <div class="card history-card" id="historyContainer" style="display: none;">
+                        <h3><i class="fas fa-history"></i> 分析历史</h3>
+                        <div id="historyList" class="history-list"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/components.js"></script>
+    <script src="/js/markdown-renderer.js"></script>
+    <script src="/js/analysis.js"></script>
+    <script>
+        // 需要登录才能访问
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!requireLogin('/analysis.html')) return;
+        });
+    </script>
+</body>
+</html>

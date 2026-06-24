@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>我的上传榜单</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}" />
+  <link rel="stylesheet" th:href="@{/css/dataset-picker-modal.css}" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+  <div id="navbar-container">
+    <nav class="navbar">
+      <a th:href="@{/}" class="navbar-brand">
+        <i class="fas fa-graduation-cap"></i>
+        PaperMaster
+      </a>
+      <div class="navbar-menu">
+        <a th:href="@{/}">首页</a>
+        <a th:href="@{/journal/rankings}">期刊排名</a>
+        <a th:href="@{/analysis.html}">期刊分析</a>
+        <a th:href="@{/auth/login.html}">登录</a>
+        <a th:href="@{/auth/register.html}" class="btn btn-primary">注册</a>
+      </div>
+    </nav>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <div class="page-switch">
+        <a class="switch-btn" th:href="@{/journal/rankings}">总榜单</a>
+        <a class="switch-btn active" th:href="@{/journal/my-rankings}">我的上传榜单</a>
+      </div>
+      <h1>我的上传榜单（按单次分析结果）</h1>
+      <div class="muted">
+        说明：这里的指标来自你上传数据的分析输出（analysis_record.analysis_result）；系统会把每个期刊的“详情页所需字段”写入用户明细表以支持详情页展示，但不会写入总数据集。
+      </div>
+    </header>
+
+    <div class="card">
+      <form class="toolbar" method="get" th:action="@{/journal/my-rankings}">
+        <div class="toolbar-left">
+          <input class="input" type="search" name="q" placeholder="搜索期刊名..." autocomplete="off" th:value="${q}" />
+          <input type="hidden" name="username" id="usernameField" th:value="${username}" />
+          <input type="hidden" name="analysisId" th:value="${selectedAnalysisId}" />
+        </div>
+
+        <div class="toolbar-right">
+          <select class="select" name="metric" title="排序指标">
+            <option th:each="m : ${metricOptions}"
+                    th:value="${m.id}"
+                    th:selected="${m.id == selectedMetric.id}"
+                    th:text="${m.label}">指标</option>
+          </select>
+
+          <select class="select" name="size" title="每页条数">
+            <option th:value="10" th:selected="${size == 10}">10/页</option>
+            <option th:value="20" th:selected="${size == 20}">20/页</option>
+            <option th:value="50" th:selected="${size == 50}">50/页</option>
+            <option th:value="100" th:selected="${size == 100}">100/页</option>
+          </select>
+
+          <button class="btn btn-primary" type="submit">刷新</button>
+          <a class="btn" th:href="@{/analysis.html}">去上传并分析</a>
+        </div>
+      </form>
+
+      <div class="muted" style="margin-bottom:10px;" th:text="${selectedMetric.description}">desc</div>
+
+      <section class="dataset-section">
+        <div class="dataset-title">
+          <div class="subhead">选择一次上传分析记录</div>
+          <div class="muted" th:if="${selectedAnalysisRecord != null}">
+            当前：<span th:text="${(selectedAnalysisRecord.originalName == null || selectedAnalysisRecord.originalName == '') ? selectedAnalysisRecord.filename : selectedAnalysisRecord.originalName}">file</span>
+            <span th:if="${datasetYear != 0}">｜口径年份：<span th:text="${datasetYear}">2026</span></span>
+          </div>
+        </div>
+
+        <div class="empty" th:if="${username == null || username == ''}">
+          未检测到登录用户。请先登录，或从页面右上角登录后再进入本页。
+        </div>
+
+        <div class="empty" th:if="${username != null && username != '' && (analysisOptions == null || analysisOptions.isEmpty())}">
+          你还没有可用的分析记录。请先在“期刊分析”中上传并运行一次分析。
+        </div>
+
+        <div class="toolbar" style="padding:0; margin-top:10px;" th:if="${analysisOptions != null && !analysisOptions.isEmpty()}">
+          <div class="toolbar-left">
+            <button class="btn btn-outline" type="button" id="openDatasetPickerBtn">
+              <i class="fas fa-folder-open"></i> 选择数据集
+            </button>
+            <span class="muted" th:if="${selectedAnalysisId == null}">未选择（请点击选择数据集）</span>
+          </div>
+          <div class="toolbar-right">
+            <a class="btn btn-outline" th:if="${username != null && username != ''}" th:href="@{/analysis/outputs(username=${username})}">
+              <i class="fas fa-table"></i> 查看处理后全貌
+            </a>
+            <a class="btn btn-outline" th:if="${username != null && username != ''}" th:href="@{/analysis/download(username=${username})}">
+              <i class="fas fa-download"></i> 下载结果ZIP
+            </a>
+            <span class="muted" th:if="${analysisOptions != null}">共 <span th:text="${analysisOptions.size()}">0</span> 条历史记录</span>
+          </div>
+        </div>
+
+        <!-- 供弹窗插件读取的数据（不直接在页面列出） -->
+        <div id="datasetItems" style="display:none;" th:if="${analysisOptions != null && !analysisOptions.isEmpty()}">
+          <div th:each="a : ${analysisOptions}"
+               class="dataset-item"
+               th:attr="data-id=${a.id},
+                        data-title=${(a.originalName == null || a.originalName == '') ? a.filename : a.originalName},
+                        data-meta=${(a.createdAt != null ? a.createdAt : '') + ' ｜ID ' + a.id},
+                        data-href=@{/journal/my-rankings(username=${username},analysisId=${a.id},metric=${selectedMetric.id},q=${q},page=0,size=${size})}">
+          </div>
+        </div>
+
+        <div class="empty" th:if="${analysisOptions != null && !analysisOptions.isEmpty() && selectedAnalysisId == null}">
+          已加载你的历史记录，请点击上方任意一条查看对应榜单。
+        </div>
+      </section>
+
+      <div class="table-wrap" th:if="${selectedAnalysisId != null}">
+        <table class="table jcr-table">
+          <thead>
+          <tr>
+            <th style="width:70px;">排名</th>
+            <th style="width:60px;">分区</th>
+            <th>期刊</th>
+            <th style="width:120px;" th:if="${selectedMetric.id != 'paper_count'}" th:text="'分值（' + ${selectedMetric.label} + '）'">分值</th>
+            <th style="width:90px;">论文数</th>
+            <th style="width:220px;">备注</th>
+            <th style="width:90px;">新颖性</th>
+            <th style="width:90px;">颠覆性</th>
+            <th style="width:90px;">跨学科性</th>
+            <th style="width:90px;">主题多样性</th>
+            <th style="width:90px;">主题集中度</th>
+            <th style="width:90px;">热点响应度</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr th:each="r : ${rows}" th:class="${r.rank == 1 ? 'rank-1' : (r.rank == 2 ? 'rank-2' : (r.rank == 3 ? 'rank-3' : ''))}">
+            <td><span class="rank-badge" th:text="${r.rank}">1</span></td>
+            <td th:text="'Q' + ${r.quartile}">Q1</td>
+            <td>
+              <a th:href="@{/journal/{journal}(journal=${r.row.journal},analysisId=${selectedAnalysisId},username=${username})}" th:text="${r.row.journal}">期刊名</a>
+            </td>
+            <td th:if="${selectedMetric.id != 'paper_count'}"
+                th:text="${r.note != null && r.note != '' ? '-' : #numbers.formatDecimal(r.metricValue, 1, 2)}">0.00</td>
+            <td th:text="${r.row.paperCount ?: ''}">0</td>
+            <td th:text="${r.note ?: ''}" class="muted">备注</td>
+            <td th:text="${r.note != null && r.note != '' ? '-' : (r.row.novelty != null ? #numbers.formatDecimal(r.row.novelty, 1, 2) : '')}">0</td>
+            <td th:text="${r.note != null && r.note != '' ? '-' : (r.row.disruption != null ? #numbers.formatDecimal(r.row.disruption, 1, 2) : '')}">0</td>
+            <td th:text="${r.note != null && r.note != '' ? '-' : (r.row.interdisciplinary != null ? #numbers.formatDecimal(r.row.interdisciplinary, 1, 2) : '')}">0</td>
+            <td th:text="${r.note != null && r.note != '' ? '-' : (r.row.topic != null ? #numbers.formatDecimal(r.row.topic, 1, 2) : '')}">0</td>
+            <td th:text="${r.note != null && r.note != '' ? '-' : (r.row.themeConcentration != null ? #numbers.formatDecimal(r.row.themeConcentration, 1, 2) : '')}">0</td>
+            <td th:text="${r.note != null && r.note != '' ? '-' : (r.row.hotResponse != null ? #numbers.formatDecimal(r.row.hotResponse, 1, 2) : '')}">0</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="empty" th:if="${selectedAnalysisId != null && (rows == null || rows.isEmpty())}">
+        该次分析记录没有可展示的期刊指标（可能 analysis_result 为空或结构不完整）。
+      </div>
+
+      <div class="pager" th:if="${selectedAnalysisId != null && page != null && page.totalPages > 1}">
+        <div class="muted" th:text="'共 ' + ${page.totalElements} + ' 本期刊｜第 ' + (${page.number} + 1) + '/' + ${page.totalPages} + ' 页'">page</div>
+        <div class="pager-links">
+          <a class="btn" th:if="${page.hasPrevious()}"
+             th:href="@{/journal/my-rankings(username=${username},analysisId=${selectedAnalysisId},metric=${selectedMetric.id},q=${q},page=${page.number - 1},size=${size})}">上一页</a>
+
+          <a class="btn btn-outline" th:each="p : ${#numbers.sequence(startPage, endPage)}"
+             th:classappend="${p == page.number} ? ' btn-primary' : ''"
+             th:href="@{/journal/my-rankings(username=${username},analysisId=${selectedAnalysisId},metric=${selectedMetric.id},q=${q},page=${p},size=${size})}"
+             th:text="${p + 1}">1</a>
+
+          <a class="btn" th:if="${page.hasNext()}"
+             th:href="@{/journal/my-rankings(username=${username},analysisId=${selectedAnalysisId},metric=${selectedMetric.id},q=${q},page=${page.number + 1},size=${size})}">下一页</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 自动从 localStorage 注入用户名；若 URL 没带 username，则补齐并刷新
+    (function () {
+      const input = document.getElementById('usernameField');
+      if (!input) return;
+      const url = new URL(window.location.href);
+      const hasUsername = url.searchParams.get('username');
+      if (hasUsername && hasUsername.trim() !== '') return;
+
+      try {
+        const raw = localStorage.getItem('currentUser');
+        if (!raw) return;
+        const u = JSON.parse(raw);
+        if (!u || !u.uname) return;
+        url.searchParams.set('username', String(u.uname));
+        window.location.replace(url.toString());
+      } catch (e) {
+        // ignore
+      }
+    })();
+
+    // 指标/每页条数改动后自动提交
+    document.addEventListener('change', (e) => {
+      const el = e.target;
+      if (!el) return;
+      if (el.matches('select[name="metric"], select[name="size"]')) {
+        el.form?.submit();
+      }
+    });
+  </script>
+  <script th:src="@{/js/components.js}"></script>
+  <script th:src="@{/js/dataset-picker-modal.js}"></script>
+  <script>
+    (function () {
+      const btn = document.getElementById('openDatasetPickerBtn');
+      const container = document.getElementById('datasetItems');
+      if (!btn || !container || !window.DatasetPickerModal) return;
+
+      const items = Array.from(container.querySelectorAll('.dataset-item')).map((el) => ({
+        id: el.dataset.id,
+        title: el.dataset.title,
+        meta: el.dataset.meta,
+        href: el.dataset.href,
+      }));
+
+      const selectedId = (new URL(window.location.href)).searchParams.get('analysisId');
+
+      btn.addEventListener('click', () => {
+        const picker = window.DatasetPickerModal.getInstance();
+        picker.open({
+          items,
+          selectedId,
+          options: { title: '选择一次上传分析记录' },
+          onSelect: (item) => {
+            if (item && item.href) window.location.href = item.href;
+          },
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

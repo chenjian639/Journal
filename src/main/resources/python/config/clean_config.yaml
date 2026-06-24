@@ -1,0 +1,43 @@
+# clean_config.yaml - 清洗专用配置（对齐Java端标准字段）
+
+# 数据源配置
+data_source:
+  type: "database"  # excel | csv | database
+  excel_dir: ""  # Excel文件路径（可选）
+  csv_dir: "data"  # CSV文件目录（相对于python脚本目录）
+  database:
+    dialect: "sqlite"
+    db_path: "../../data/paper_system.db"  # 相对于python脚本目录
+    table: "papers"
+
+# 清洗规则
+cleaning:
+  drop_conference: true  # 是否去除会议论文
+  min_year: null  # 最小年份限制，null或空表示不限制
+  target_journals: []  # 指定目标期刊列表，空则自动取Top-N
+  top_n: 5 # 自动选取的期刊数量
+
+# 字段映射（原始列名 → Java端标准列名）
+field_mapping:
+  "doi": ["DOI", "doi", "Digital Object Identifier","DOI-DOI"]
+  "journal": ["Source Title", "Journal", "Publication Title","journal","Source-文献来源"]
+  "keywords": ["Keywords", "Author Keywords", "关键词","keywords","Keywords-关键词","Keyword-关键词"]
+  "publish_date": ["Publication Year", "Year","publish_date","Year-出版年","Year-年"]
+  "target": ["WoS Categories", "Categories","target","Categories-研究领域"]
+  "citations": ["Cited References", "References", "Cited References","citations","RFN-参考文献"]
+  "title": ["Article Title", "Title", "Document Title","title","Title-标题","Title-题名"]
+  "abstract": ["Abstract", "摘要", "abstract","Abstract-摘要","Summary-摘要"]
+  "category": ["category", "中英文献"]
+ 
+# 可选：写回清洗结果到数据库的配置示例
+# 启用后脚本会在清洗完成后把结果写入指定表（同时仍会保存 CSV 快照）
+write_back:
+  enabled: true          # 设置为 true 启用写回
+  # 写回的目标表名，脚本会把历史遗留表名（如 cleaned_papers）映射到 `cleaned`
+  table: cleaned  # 写回的目标表名
+  if_exists: append     # 写入方式：replace | append
+  chunksize: 1000  
+  database:
+    dialect: "sqlite"
+    db_path: "../../data/paper_system.db"  # 相对于python脚本目录
+

@@ -1,0 +1,7 @@
+{
+  "year": 2025,
+  "db_config": {
+    "dialect": "sqlite",
+    "db_path": "../../data/paper_system.db"
+  }
+}

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>关键词分析 - PaperMaster</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/dataset-picker-modal.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div id="navbar-container"></div>
+
+    <div class="container">
+        <div class="page-header">
+            <h1>关键词分析</h1>
+            <p class="page-subtitle">查询某个关键词出现在哪些论文中、归属期刊、最早出现期刊与最高频期刊。</p>
+        </div>
+
+        <div class="card">
+            <div class="keyword-toolbar">
+                <div class="keyword-input">
+                    <label for="keywordInput">关键词</label>
+                    <input id="keywordInput" type="text" placeholder="例如：machine learning / 深度学习 / bibliometrics" />
+                </div>
+                <div class="keyword-actions">
+                    <button id="scopeGlobalBtn" class="btn btn-primary" title="使用全库（papers 表 + keyword_occurrence）"><i class="fas fa-globe"></i> 全库</button>
+                    <button id="scopeDatasetBtn" class="btn btn-outline" title="使用用户上传数据集（uploads/{username}/{filename}）"><i class="fas fa-folder-open"></i> 用户数据集</button>
+                    <button id="pickDatasetBtn" class="btn btn-outline" style="display:none;"><i class="fas fa-list"></i> 选择数据集</button>
+                    <span id="datasetHint" class="status-hint" style="display:none;"></span>
+                    <button id="analyzeBtn" class="btn btn-primary"><i class="fas fa-search"></i> 分析</button>
+                    <button id="buildIndexBtn" class="btn btn-outline"><i class="fas fa-database"></i> 初始化索引</button>
+                </div>
+            </div>
+
+            <div class="keyword-status" id="statusBox">
+                <div class="status-row">
+                    <span class="status-label">索引状态：</span>
+                    <span id="indexStatusText">加载中...</span>
+                </div>
+                <div class="status-row" id="progressRow" style="display:none;">
+                    <span class="status-label">构建进度：</span>
+                    <div class="progress">
+                        <div id="progressBar" class="progress-bar" style="width:0%"></div>
+                    </div>
+                    <span id="progressText" class="status-hint"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="card">
+                <h3>热门关键词</h3>
+                <div id="topKeywords" class="keyword-chips">加载中...</div>
+            </div>
+
+            <div class="card">
+                <h3>关键词概览</h3>
+                <div id="summaryBox" class="empty-state">请输入关键词并点击“分析”。</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>期刊分布（Top 20）</h3>
+            <div id="journalDist" class="empty-state">暂无数据</div>
+        </div>
+
+        <div class="card">
+            <div class="table-header">
+                <h3>命中论文</h3>
+                <div class="pager">
+                    <button id="prevPage" class="btn btn-outline btn-sm">上一页</button>
+                    <span id="pageText" class="status-hint">第 1 页</span>
+                    <button id="nextPage" class="btn btn-outline btn-sm">下一页</button>
+                </div>
+            </div>
+            <div class="table-wrapper">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>标题</th>
+                            <th>期刊</th>
+                            <th>发表时间</th>
+                            <th>DOI</th>
+                        </tr>
+                    </thead>
+                    <tbody id="papersTbody">
+                        <tr><td colspan="5" class="empty-td">暂无数据</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/components.js"></script>
+    <script src="/js/dataset-picker-modal.js"></script>
+    <script src="/js/keyword_analysis.js"></script>
+</body>
+</html>

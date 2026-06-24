@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title th:text="'匹配分析 - ' + ${journal}">匹配分析</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script th:src="@{/js/markdown-renderer.js}"></script>
+</head>
+<body>
+  <!-- 导航栏容器 -->
+  <div id="navbar-container">
+    <nav class="navbar">
+      <a th:href="@{/}" class="navbar-brand">
+        <i class="fas fa-graduation-cap"></i>
+        PaperMaster
+      </a>
+      <div class="navbar-menu">
+        <a th:href="@{/}">首页</a>
+        <a th:href="@{/journal/rankings}">期刊排名</a>
+        <a th:href="@{/analysis.html}">期刊分析</a>
+        <a th:href="@{/auth/login.html}">登录</a>
+        <a th:href="@{/auth/register.html}" class="btn btn-primary">注册</a>
+      </div>
+    </nav>
+  </div>
+
+  <div class="container">
+    <header class="header">
+      <div class="row">
+        <div>
+          <h1>匹配分析</h1>
+          <div class="muted" th:text="'期刊：' + ${journal} + '（' + ${row.year} + '）｜总体雷达匹配度：' + ${matchPct} + '%'">journal info</div>
+        </div>
+        <div class="toolbar-right">
+          <a class="btn" th:href="@{/journal/recommend}">返回推荐列表</a>
+          <a class="btn" th:href="@{/journal/survey}">修改问卷</a>
+        </div>
+      </div>
+    </header>
+
+    <section class="card">
+      <h2 th:text="'关键词命中（' + ${targetYear} + '）'">关键词命中</h2>
+      <div class="tag-list" th:if="${matchedUserKeywords != null && !matchedUserKeywords.isEmpty()}">
+        <span class="tag" th:each="k : ${matchedUserKeywords}" th:text="${k}">keyword</span>
+      </div>
+      <div class="muted" th:if="${matchedUserKeywords == null || matchedUserKeywords.isEmpty()}">（你的关键词未命中该期刊今年/最新关键词列表）</div>
+    </section>
+
+    <section class="card">
+      <h2>雷达图（你 vs 期刊）</h2>
+      <div class="muted">内容前沿性=新颖性+颠覆性；其余维度对应表中字段</div>
+      <div class="radar-wrap" style="--pm-chart-h:260px"><canvas id="radarOverlay"></canvas></div>
+
+      <script id="overlay-json" type="application/json" th:utext="${overlayJson}"></script>
+
+      <script>
+        const overlay = JSON.parse(document.getElementById('overlay-json').textContent);
+        function radarOptions(maxV) {
+          return {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            resizeDelay: 120,
+            scales: { r: { beginAtZero: true, suggestedMax: maxV || 100, ticks: { stepSize: 50 } } }
+          };
+        }
+        new Chart(document.getElementById('radarOverlay'), {
+          type: 'radar',
+          data: {
+            labels: overlay.labels,
+            datasets: [
+              { label: overlay.a.name, data: overlay.a.values, fill: true, borderWidth: 2 },
+              { label: overlay.b.name, data: overlay.b.values, fill: true, borderWidth: 2 },
+            ]
+          },
+          options: radarOptions(overlay.max)
+        });
+      </script>
+    </section>
+
+    <section class="card">
+      <h2>各维度适配度</h2>
+      <div class="muted">按维度给出匹配度（差距越小越匹配）。</div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>维度</th>
+              <th>你</th>
+              <th>期刊</th>
+              <th>差距</th>
+              <th>匹配度</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="d : ${diffs}">
+              <td th:text="${d.dim}">dim</td>
+              <td th:text="${#numbers.formatDecimal(d.user, 1, 2)}">user</td>
+              <td th:text="${#numbers.formatDecimal(d.journal, 1, 2)}">journal</td>
+              <td th:text="${#numbers.formatDecimal(d.gap, 1, 2)}">gap</td>
+              <td th:text="${d.match} + '%'">match</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>评语（你 vs 期刊）</h2>
+      <div class="two-col">
+        <div class="comment">
+          <div class="comment-title">你的画像</div>
+          <div th:each="entry : ${userComments}">
+            <div class="comment-k" th:text="${entry.key}">key</div>
+            <div class="comment-body" th:text="${entry.value}">value</div>
+          </div>
+        </div>
+        <div class="comment">
+          <div class="comment-title" th:text="${journal}">journal</div>
+          <div th:each="entry : ${journalComments}">
+            <div class="comment-k" th:text="${entry.key}">key</div>
+            <div class="comment-body" th:text="${entry.value}">value</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="row">
+        <div>
+          <h2>AI 匹配分析</h2>
+          <div class="muted">将结合你的问卷画像与该期刊指标，输出更细的适配建议。</div>
+        </div>
+        <div>
+          <button id="aiMatchBtn" class="btn btn-primary" type="button" th:attr="data-journal=${journal}">开始分析</button>
+        </div>
+      </div>
+
+      <div id="aiMatchStatus" class="muted" style="margin-top: 8px;"></div>
+      <div id="aiMatchResult" class="ai-result pm-markdown" style="display:none;"></div>
+
+      <script>
+        const btn = document.getElementById('aiMatchBtn');
+        const st = document.getElementById('aiMatchStatus');
+        const out = document.getElementById('aiMatchResult');
+        const journalName = btn.dataset.journal;
+
+        async function runMatchAi() {
+          btn.disabled = true;
+          st.textContent = '正在调用 AI 匹配分析，请稍候...';
+          out.style.display = 'none';
+          out.textContent = '';
+          try {
+            const resp = await fetch(`/journal/recommend/${encodeURIComponent(journalName)}/ai-analysis`, { method: 'POST' });
+            const data = await resp.json();
+            if (!resp.ok) {
+              throw new Error(data?.detail || '请求失败');
+            }
+            st.textContent = `分析完成（模型：${data.used_model || ''}｜总体匹配度：${data.match_pct ?? ''}%）`;
+            out.style.display = 'block';
+            if (window.PaperMasterMarkdown && typeof window.PaperMasterMarkdown.render === 'function') {
+              out.innerHTML = window.PaperMasterMarkdown.render(data.analysis || '');
+            } else {
+              out.textContent = data.analysis || '';
+            }
+          } catch (e) {
+            st.textContent = `分析失败：${e.message || e}`;
+          } finally {
+            btn.disabled = false;
+          }
+        }
+
+        btn.addEventListener('click', runMatchAi);
+      </script>
+    </section>
+  </div>
+</body>
+</html>

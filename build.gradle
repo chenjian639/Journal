@@ -1,0 +1,91 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.5.6'
+	id 'io.spring.dependency-management' version '1.1.7'
+}
+
+group = 'com.paper'
+version = '0.0.1-SNAPSHOT'
+description = '学术论文管理系统 - Paper Management System'
+
+def targetJavaVersion = (findProperty('javaVersion') ?: '24').toString().toInteger()
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+	}
+}
+
+// 设置编码为 UTF-8
+tasks.withType(JavaCompile).configureEach {
+	options.encoding = 'UTF-8'
+	options.release = targetJavaVersion
+}
+
+tasks.withType(Javadoc).configureEach {
+	options.encoding = 'UTF-8'
+}
+
+// 设置运行时编码为 UTF-8，解决控制台中文乱码
+tasks.withType(JavaExec).configureEach {
+	jvmArgs '-Dfile.encoding=UTF-8', '-Dsun.stdout.encoding=UTF-8', '-Dsun.stderr.encoding=UTF-8'
+}
+
+bootRun {
+	jvmArgs = [
+		'-Dfile.encoding=UTF-8',
+		'-Dsun.stdout.encoding=UTF-8',
+		'-Dsun.stderr.encoding=UTF-8',
+		'-Dnative.encoding=UTF-8'
+	]
+	// Windows 控制台编码设置
+	systemProperty 'file.encoding', 'UTF-8'
+	systemProperty 'sun.stdout.encoding', 'UTF-8'
+	systemProperty 'sun.stderr.encoding', 'UTF-8'
+}
+
+repositories {
+	maven { url = 'https://maven.aliyun.com/repository/public' }
+	maven { url = 'https://maven.aliyun.com/repository/central' }
+    
+	mavenCentral()
+}
+
+apply plugin: 'war'
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	// 注意：不要显式引入 jakarta.servlet-api（避免与 Spring Boot 管理的版本冲突）
+	
+	// 加入密码加密功能依赖
+	implementation 'org.mindrot:jbcrypt:0.4'
+
+    // 其他示例依赖（如 JPA）
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'jakarta.persistence:jakarta.persistence-api:3.1.0'
+	implementation 'com.sun.mail:jakarta.mail:2.0.1'
+    implementation 'com.sun.activation:jakarta.activation:2.0.1'
+	// 数据库驱动
+    runtimeOnly 'mysql:mysql-connector-java:8.0.30'  // MySQL
+    implementation 'org.xerial:sqlite-jdbc:3.45.1.0' // SQLite（开发测试用）
+    implementation 'org.hibernate.orm:hibernate-community-dialects:6.4.4.Final' // SQLite方言支持
+    
+    // 模板引擎
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    
+    // Jackson库，用于JSON序列化和反序列化
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.2'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.17.2'
+    
+    // HTTP客户端（用于AI API调用）
+    implementation 'org.apache.httpcomponents:httpclient:4.5.14'
+
+	// CSV 解析与规范化（用于用户上传数据兼容多种表头/分隔符）
+	implementation 'org.apache.commons:commons-csv:1.10.0'
+}
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
